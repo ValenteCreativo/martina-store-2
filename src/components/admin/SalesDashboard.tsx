@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { WHITELISTED_EMAIL } from '../../lib/constants';
 
 type SalesOrder = {
   id: string;
@@ -37,7 +36,7 @@ type ApiResponse = {
 };
 
 interface Props {
-  adminEmail: string;
+  getAccessToken: () => Promise<string | null>;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -47,7 +46,7 @@ const STATUS_COLOR: Record<string, string> = {
   delivered: 'text-emerald-400',
 };
 
-export default function SalesDashboard({ adminEmail }: Props) {
+export default function SalesDashboard({ getAccessToken }: Props) {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,11 +62,9 @@ export default function SalesDashboard({ adminEmail }: Props) {
         if (statusFilter !== 'all') params.set('status', statusFilter);
         params.set('limit', String(limit));
 
-        const res = await fetch(`/api/admin/sales?${params.toString()}`, {
-          headers: {
-            'x-admin-email': adminEmail,
-          },
-        });
+        const token = await getAccessToken();
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch(`/api/admin/sales?${params.toString()}`, { headers });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
           throw new Error(body.error || 'Failed to load sales');
@@ -82,7 +79,7 @@ export default function SalesDashboard({ adminEmail }: Props) {
     };
 
     load();
-  }, [adminEmail, statusFilter, limit]);
+  }, [getAccessToken, statusFilter, limit]);
 
   const recentOrders = useMemo(() => data?.orders.slice(0, 10) || [], [data]);
 
@@ -198,7 +195,7 @@ export default function SalesDashboard({ adminEmail }: Props) {
                     {order.status}
                   </td>
                   <td className="py-3 pr-4">
-                    <StatusUpdater orderId={order.id} current={order.status} />
+                    <StatusUpdater orderId={order.id} current={order.status} getAccessToken={getAccessToken} />
                   </td>
                   <td className="py-3 pr-4 text-[#8b7d7b]">
                     <ShippingDetailButton order={order} />
@@ -225,7 +222,7 @@ function StatCard({ label, value, accent = false }: { label: string; value: stri
   );
 }
 
-function StatusUpdater({ orderId, current }: { orderId: string; current: string }) {
+function StatusUpdater({ orderId, current, getAccessToken }: { orderId: string; current: string; getAccessToken: () => Promise<string | null> }) {
   const [status, setStatus] = useState(current);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -240,7 +237,7 @@ function StatusUpdater({ orderId, current }: { orderId: string; current: string 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-email': WHITELISTED_EMAIL,
+          Authorization: `Bearer ${await getAccessToken()}`,
         },
         body: JSON.stringify({ orderId, status: next }),
       });

@@ -23,13 +23,12 @@ DATABASE_URL=postgresql://...
 
 # Privy (autenticación)
 NEXT_PUBLIC_PRIVY_APP_ID=clxxxxx
+PRIVY_APP_SECRET=               # secreto de servidor: nunca NEXT_PUBLIC_
+ADMIN_PRIVY_DIDS=did:privy:...  # lista separada por comas de identidades autorizadas
 
 # MercadoPago
 MERCADO_PAGO_ACCESS_TOKEN=APP_USR-...
 MERCADO_PAGO_WEBHOOK_SECRET=  # Opcional — firma de webhooks (recomendado en prod)
-
-# Wallet de Martina (recibe pagos cripto)
-NEXT_PUBLIC_MARTINA_WALLET=0x...
 
 # URL base del sitio
 NEXT_PUBLIC_BASE_URL=https://tudominio.com
@@ -65,7 +64,7 @@ npm test
 | `/blog` | Journal / entradas del blog |
 | `/reservations` | Formulario de reserva de sesión de tatuaje |
 | `/about` | Sobre Martina |
-| `/admin` | Panel de administración (requiere Privy + email whitelisted) |
+| `/admin` | Panel de administración (requiere Privy + DID autorizado en servidor) |
 | `/login` | Login admin via Privy |
 
 ## Pagos
@@ -75,9 +74,9 @@ npm test
 - Webhook en `/api/webhooks/mercadopago` — verifica firma y actualiza estado
 - Configurar el webhook en el panel de MP apuntando a `https://tudominio.com/api/webhooks/mercadopago`
 
-### Cripto (USDC/USDT)
-- Redes: Base, Polygon, Arbitrum, Ethereum
-- Flujo: `/api/checkout-crypto` → firma en wallet → `/api/verify-tx` → `/success`
+### Cripto
+
+El checkout cripto está deliberadamente desactivado hasta tener una integración revisada. No debe activarse para ventas reales sin validación completa de importe, token y liquidación.
 
 ## DB Schema
 
@@ -85,7 +84,7 @@ npm test
 
 ## Admin
 
-Acceso via `/login` con Privy usando el email whitelisted (`martinagorozo1@proton.me`).
+Acceso vía `/login` con Privy. Las rutas administrativas validan el token en el servidor y comparan el DID contra `ADMIN_PRIVY_DIDS`; un correo o localStorage no otorgan permisos.
 
 Secciones del panel:
 - **Artworks** — CRUD de arte digital

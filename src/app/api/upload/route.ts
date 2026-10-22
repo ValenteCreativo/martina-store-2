@@ -1,8 +1,11 @@
 
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { limit } from '../../../lib/rate-limit';
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
+    const throttled = limit(request, 'upload', 15, 60 * 60_000);
+    if (throttled) return throttled;
     const body = (await request.json()) as HandleUploadBody;
 
     try {
@@ -10,9 +13,9 @@ export async function POST(request: Request): Promise<NextResponse> {
             body,
             request,
             onBeforeGenerateToken: async () => {
-                // Allow images and other assets used in blog/portfolio
+                // Do not issue upload tokens for active content such as SVG/HTML.
                 return {
-                    allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
+                    allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp'],
                     tokenPayload: JSON.stringify({
                         // optional payload
                     }),

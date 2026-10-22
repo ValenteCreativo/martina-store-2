@@ -4,6 +4,8 @@ import { eq } from 'drizzle-orm';
 import { isAdminEmail } from '../../../../lib/crypto';
 
 export async function POST(request: NextRequest) {
+  return NextResponse.json({ error: 'La autenticación con wallet está temporalmente desactivada.' }, { status: 410 });
+  /*
   try {
     const { privyId, walletAddress, email } = await request.json();
 
@@ -60,4 +62,5 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+  */
 }

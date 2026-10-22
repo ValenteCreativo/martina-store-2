@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePrivy } from '@privy-io/react-auth';
 import Link from 'next/link';
 import { artworkService } from '../../lib/services';
 import { blogService } from '../../lib/blog';
@@ -9,31 +10,24 @@ import ArtworkForm from '../../components/admin/ArtworkForm';
 import ArtworkList from '../../components/admin/ArtworkList';
 import SalesDashboard from '../../components/admin/SalesDashboard';
 import ReservationsDashboard from '../../components/admin/ReservationsDashboard';
-import { WHITELISTED_EMAIL } from '../../lib/constants';
-import type { Artwork, ArtworkFormData, BlogPost, User } from '../../types';
+import type { Artwork, ArtworkFormData, BlogPost } from '../../types';
 
 export default function AdminPage() {
   const router = useRouter();
+  const { ready, authenticated, user, getAccessToken, logout } = usePrivy();
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
   const [tab, setTab] = useState<'artworks' | 'tattoos' | 'blog' | 'sales' | 'reservations'>('artworks');
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
+    if (!ready) return;
+    if (!authenticated || !user) {
       router.push('/login');
       return;
     }
-    const parsed = JSON.parse(storedUser) as User & { walletAddress?: string };
-    if (!parsed.isAdmin || parsed.email.toLowerCase() !== WHITELISTED_EMAIL.toLowerCase()) {
-      router.push('/login');
-      return;
-    }
-    setUser(parsed);
     loadData();
-  }, [router]);
+  }, [router, ready, authenticated, user]);
 
   async function loadData() {
     try {
@@ -106,11 +100,11 @@ export default function AdminPage() {
   }
 
   function handleLogout() {
-    localStorage.removeItem('user');
+    logout();
     router.push('/login');
   }
 
-  if (loading || !user) {
+  if (loading || !ready || !authenticated || !user) {
     return (
       <main className="min-h-screen pt-32 flex items-center justify-center sacred-minimal">
         <div className="sacred-dot animate-subtle-glow" />
@@ -119,69 +113,62 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen pt-32 pb-16 sacred-minimal">
+    <main className="min-h-screen bg-[#080706] pt-28 pb-16 text-[#e5e5e5]">
       <div className="content-container max-w-7xl">
-        <div className="mb-12">
-          <div className="flex justify-center gap-2 mb-8">
-            <div className="sacred-dot animate-subtle-glow" />
-            <div className="sacred-dot animate-subtle-glow" style={{ animationDelay: '1s' }} />
-            <div className="sacred-dot animate-subtle-glow" style={{ animationDelay: '2s' }} />
+        <div className="mb-10 flex flex-col justify-between gap-5 border-b border-white/10 pb-7 md:flex-row md:items-end">
+          <div>
+            <p className="text-[10px] uppercase tracking-[.32em] text-[#a51f2d]">Administración</p>
+            <h1 className="mt-2 text-4xl text-white md:text-5xl">Estudio Martina</h1>
+            <p className="mt-2 text-sm text-white/50">Obra, ventas, agenda y contenido en un mismo espacio.</p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-light mb-2 text-center tracking-wider">Studio</h1>
-          <p className="text-center text-[#8b7d7b] font-light mb-4">Welcome back, {user.email}</p>
-          <div className="text-center">
-            <button onClick={handleLogout} className="text-xs elegant-text subtle-accent">
-              Sign Out
-            </button>
-          </div>
-          <div className="divider my-8" />
+          <div className="text-left md:text-right"><p className="text-xs text-white/45">Sesión de Privy</p><button onClick={handleLogout} className="mt-2 text-[10px] uppercase tracking-[.18em] text-[#d8a0a5] hover:text-white">Cerrar sesión</button></div>
         </div>
 
-        <div className="flex justify-center gap-4 mb-12">
+        <div className="mb-10 flex flex-wrap gap-2 border-b border-white/10 pb-5">
           <button
             onClick={() => setTab('artworks')}
-            className={`px-6 py-2 elegant-text text-xs transition-all duration-300 rounded ${tab === 'artworks'
-              ? 'minimal-border bg-[#8b7d7b]/10'
-              : 'border border-transparent hover:border-[#8b7d7b]/20'
+            className={`px-4 py-2 text-[10px] uppercase tracking-[.16em] transition ${tab === 'artworks'
+              ? 'border border-[#a51f2d] bg-[#a51f2d]/10 text-white'
+              : 'border border-transparent text-white/55 hover:border-white/20 hover:text-white'
               }`}
           >
-            Artworks
+            Obra
           </button>
           <button
             onClick={() => setTab('tattoos')}
-            className={`px-6 py-2 elegant-text text-xs transition-all duration-300 rounded ${tab === 'tattoos'
-              ? 'minimal-border bg-[#8b7d7b]/10'
-              : 'border border-transparent hover:border-[#8b7d7b]/20'
+            className={`px-4 py-2 text-[10px] uppercase tracking-[.16em] transition ${tab === 'tattoos'
+              ? 'border border-[#a51f2d] bg-[#a51f2d]/10 text-white'
+              : 'border border-transparent text-white/55 hover:border-white/20 hover:text-white'
               }`}
           >
             Tattoos
           </button>
           <button
             onClick={() => setTab('blog')}
-            className={`px-6 py-2 elegant-text text-xs transition-all duration-300 rounded ${tab === 'blog'
-              ? 'minimal-border bg-[#8b7d7b]/10'
-              : 'border border-transparent hover:border-[#8b7d7b]/20'
+            className={`px-4 py-2 text-[10px] uppercase tracking-[.16em] transition ${tab === 'blog'
+              ? 'border border-[#a51f2d] bg-[#a51f2d]/10 text-white'
+              : 'border border-transparent text-white/55 hover:border-white/20 hover:text-white'
               }`}
           >
-            Journal
+            Contenido
           </button>
           <button
             onClick={() => setTab('sales')}
-            className={`px-6 py-2 elegant-text text-xs transition-all duration-300 rounded ${tab === 'sales'
-              ? 'minimal-border bg-[#8b7d7b]/10'
-              : 'border border-transparent hover:border-[#8b7d7b]/20'
+            className={`px-4 py-2 text-[10px] uppercase tracking-[.16em] transition ${tab === 'sales'
+              ? 'border border-[#a51f2d] bg-[#a51f2d]/10 text-white'
+              : 'border border-transparent text-white/55 hover:border-white/20 hover:text-white'
               }`}
           >
-            Sales
+            Ventas
           </button>
           <button
             onClick={() => setTab('reservations')}
-            className={`px-6 py-2 elegant-text text-xs transition-all duration-300 rounded ${tab === 'reservations'
-              ? 'minimal-border bg-[#8b7d7b]/10'
-              : 'border border-transparent hover:border-[#8b7d7b]/20'
+            className={`px-4 py-2 text-[10px] uppercase tracking-[.16em] transition ${tab === 'reservations'
+              ? 'border border-[#a51f2d] bg-[#a51f2d]/10 text-white'
+              : 'border border-transparent text-white/55 hover:border-white/20 hover:text-white'
               }`}
           >
-            Reservations
+            Agenda
           </button>
         </div>
 
@@ -189,12 +176,12 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1">
               <div className="glass-minimal p-6 rounded-lg sticky top-24">
-                <h2 className="elegant-text text-sm mb-6">Add New Artwork</h2>
+                <h2 className="text-[10px] uppercase tracking-[.18em] text-[#d8a0a5] mb-6">Agregar obra</h2>
                 <ArtworkForm onSubmit={handleArtworkSubmit} />
               </div>
             </div>
             <div className="lg:col-span-2">
-              <h2 className="elegant-text text-sm mb-6">Your Collection</h2>
+              <h2 className="text-[10px] uppercase tracking-[.18em] text-[#d8a0a5] mb-6">Colección</h2>
               <ArtworkList
                 artworks={artworks.filter(a => a.category !== 'tattoo')}
                 onDelete={handleArtworkDelete}
@@ -207,12 +194,12 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1">
               <div className="glass-minimal p-6 rounded-lg sticky top-24">
-                <h2 className="elegant-text text-sm mb-6">Add New Tattoo</h2>
+                <h2 className="text-[10px] uppercase tracking-[.18em] text-[#d8a0a5] mb-6">Agregar tatuaje</h2>
                 <ArtworkForm onSubmit={handleArtworkSubmit} defaultCategory="tattoo" />
               </div>
             </div>
             <div className="lg:col-span-2">
-              <h2 className="elegant-text text-sm mb-6">Tattoo Works</h2>
+              <h2 className="text-[10px] uppercase tracking-[.18em] text-[#d8a0a5] mb-6">Tatuajes</h2>
               <ArtworkList
                 artworks={artworks.filter(a => a.category === 'tattoo')}
                 onDelete={handleArtworkDelete}
@@ -225,14 +212,14 @@ export default function AdminPage() {
           <div className="max-w-5xl mx-auto">
             <div className="mb-8 text-center">
               <Link href="/admin/blog/new" className="btn-elegant">
-                Create New Post
+                Crear entrada
               </Link>
             </div>
             <div className="space-y-4">
               {blogs.length === 0 ? (
                 <div className="text-center py-12 glass-minimal rounded-lg">
                   <p className="text-[#8b7d7b] font-light">
-                    No journal entries yet. Create your first post.
+                    No hay entradas todavía. Crea la primera cuando quieras publicarla.
                   </p>
                 </div>
               ) : (
@@ -244,13 +231,13 @@ export default function AdminPage() {
                     <div>
                       <h3 className="text-lg font-light mb-1">{post.title}</h3>
                       <p className="text-sm text-[#8b7d7b] font-light">
-                        {post.published ? 'Published' : 'Draft'} ·{' '}
+                        {post.published ? 'Publicado' : 'Borrador'} ·{' '}
                         {new Date(post.createdAt!).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex gap-3">
                       <Link href={`/admin/blog/${post.id}`} className="btn-elegant text-xs px-4 py-2">
-                        Edit
+                        Editar
                       </Link>
                       <button
                         onClick={() => {
@@ -258,7 +245,7 @@ export default function AdminPage() {
                         }}
                         className="px-4 py-2 border border-[#4a3434] text-[#4a3434] hover:bg-[#4a3434]/10 rounded elegant-text text-xs transition-colors"
                       >
-                        Delete
+                        Eliminar
                       </button>
                     </div>
                   </div>
@@ -270,13 +257,13 @@ export default function AdminPage() {
 
         {tab === 'sales' && (
           <div className="max-w-6xl mx-auto">
-            <SalesDashboard adminEmail={user.email} />
+            <SalesDashboard getAccessToken={getAccessToken} />
           </div>
         )}
 
         {tab === 'reservations' && (
           <div className="max-w-6xl mx-auto">
-            <ReservationsDashboard adminEmail={user.email} />
+            <ReservationsDashboard getAccessToken={getAccessToken} />
           </div>
         )}
       </div>

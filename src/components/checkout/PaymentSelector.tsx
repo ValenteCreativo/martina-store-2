@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { CreditCard, Wallet } from 'lucide-react';
-import { CHAIN_NAMES, SUPPORTED_CHAIN_IDS, DEFAULT_CHAIN_ID } from '../../lib/crypto';
+import { CHAIN_NAMES, SUPPORTED_CHAIN_IDS } from '../../lib/crypto';
 
 export type PaymentMethod = 'crypto' | 'mercadopago';
 export type TokenType = 'USDC' | 'USDT';
+// Do not expose an incomplete payment rail to buyers. Re-enable only with a reviewed flow.
+const CRYPTO_CHECKOUT_ENABLED = false;
 
 interface PaymentSelectorProps {
   onMethodChange: (method: PaymentMethod) => void;
@@ -32,7 +33,7 @@ export default function PaymentSelector({
     <div className="space-y-6">
       {/* Payment Method Toggle */}
       <div className="flex gap-2">
-        <button
+        {CRYPTO_CHECKOUT_ENABLED && <button
           type="button"
           disabled={disabled}
           onClick={() => onMethodChange('mercadopago')}
@@ -47,7 +48,7 @@ export default function PaymentSelector({
         >
           <CreditCard className="w-4 h-4" />
           <span className="text-sm font-cinzel">Card / Transfer</span>
-        </button>
+        </button>}
 
         <button
           type="button"
@@ -68,7 +69,7 @@ export default function PaymentSelector({
       </div>
 
       {/* Crypto Options */}
-      {selectedMethod === 'crypto' && (
+      {CRYPTO_CHECKOUT_ENABLED && selectedMethod === 'crypto' && (
         <div className="space-y-4 animate-fade-in">
           {/* Chain Selector */}
           <div>

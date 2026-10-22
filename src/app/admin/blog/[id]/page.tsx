@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { usePrivy } from '@privy-io/react-auth';
 import { blogService } from '../../../../lib/blog';
-import { WHITELISTED_EMAIL } from '../../../../lib/constants';
-import type { BlogPost, User } from '../../../../types';
+import type { BlogPost } from '../../../../types';
 import { Upload } from 'lucide-react';
 import RichTextEditor from '../../../../components/ui/RichTextEditor';
 
 export default function EditBlogPostPage() {
   const router = useRouter();
   const params = useParams();
-  const [user, setUser] = useState<User | null>(null); // Changed from any to User | null
+  const { ready, authenticated, user } = usePrivy();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -23,17 +23,11 @@ export default function EditBlogPostPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
+    if (!ready) return;
+    if (!authenticated || !user) {
       router.push('/login');
       return;
     }
-    const parsed = JSON.parse(storedUser) as User;
-    if (!parsed.isAdmin || parsed.email.toLowerCase() !== WHITELISTED_EMAIL.toLowerCase()) {
-      router.push('/login');
-      return;
-    }
-    setUser(parsed);
 
     async function loadPost() {
       try {
@@ -56,7 +50,7 @@ export default function EditBlogPostPage() {
     }
 
     loadPost();
-  }, [params.id, router]);
+  }, [params.id, router, ready, authenticated, user]);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

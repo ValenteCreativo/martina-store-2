@@ -1,0 +1,12 @@
+import Link from 'next/link';
+
+const services = [
+  { title: 'Tatuaje Ritual', text: 'Hay algo en ti que quiere ser visto y volverse un recordatorio permanente. Mi propuesta vuelve al origen ritual de tatuarse: darle a tu símbolo un hogar en el templo que habitas, tu cuerpo.' },
+  { title: 'Tarot evolutivo', text: 'No es adivinación: es un llamado del alma. Las cartas son espejo y brújula para mirar hacia adentro con honestidad y ternura.' },
+  { title: 'Terapia cuántica', text: 'Un trabajo con tu campo sutil energético para armonizar desequilibrios, disolver la distorsión del ego limitado y reconectarte con tu Ser esencial.' },
+  { title: 'Armonización energética', text: 'Una activación guiada con códigos de geometría sagrada que armoniza tu campo energético y optimiza su flujo.' },
+];
+
+export default function ServicesPage() {
+  return <main className="min-h-screen bg-[#050505] pt-32 pb-24 text-[#e5e5e5]"><div className="content-container max-w-6xl"><header className="max-w-3xl"><p className="meta-label text-[#a51f2d]">Servicios</p><h1 className="mt-5 text-4xl leading-tight md:text-6xl">Herramientas de reconexión con el Ser.</h1><p className="mt-8 max-w-2xl text-base leading-relaxed text-[#c8bfba]">En tatuaje trabajo piezas medianas y grandes, de media sesión a sesión completa. Mi lenguaje va de lo botánico, los insectos y los objetos a lo ornamental y la abstracción orgánica. No realizo tatuajes mini.</p></header><section className="mt-20 border-t border-white/10">{services.map((service, index) => <article key={service.title} className="grid gap-8 border-b border-white/10 py-12 md:grid-cols-[.3fr_.7fr] md:py-16"><span className="meta-label text-[#a51f2d]">0{index + 1}</span><div><h2 className="text-3xl text-white md:text-4xl">{service.title}</h2><p className="mt-5 max-w-2xl text-base leading-relaxed text-[#c8bfba]">{service.text}</p>{service.title === 'Tatuaje Ritual' && <p className="mt-5 max-w-2xl text-sm leading-relaxed text-white/55">El proceso integra conexión con la presencia, carta de intenciones, armonización energética, terapia cuántica y el tatuaje. Los diseños personalizados se muestran y ajustan el día de la sesión.</p>}<Link href="/reservations" className="btn-ritual mt-8">Reservar</Link></div></article>)}</section><div className="mt-16"><Link href="/" className="text-[10px] uppercase tracking-[.25em] text-white/50 transition hover:text-[#a51f2d]">← Volver al inicio</Link></div></div></main>;
+}

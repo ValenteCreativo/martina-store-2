@@ -3,6 +3,8 @@ import { db, cryptoOrders, walletUsers, artworks } from '../../../db';
 import { eq } from 'drizzle-orm';
 
 export async function POST(request: NextRequest) {
+  return NextResponse.json({ error: 'Los pagos con cripto están temporalmente desactivados.' }, { status: 410 });
+  /*
   try {
     const { artworkId, chainId, tokenAddress, amountUsd, buyerAddress } = await request.json();
 
@@ -75,4 +77,5 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+  */
 }

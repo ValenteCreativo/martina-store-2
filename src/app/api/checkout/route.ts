@@ -2,15 +2,21 @@ import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { NextRequest, NextResponse } from 'next/server';
 import { db, mercadoPagoOrders, artworks } from '../../../db';
 import { eq } from 'drizzle-orm';
+import { limit } from '../../../lib/rate-limit';
 
 const client = new MercadoPagoConfig({ accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN! });
 
 export async function POST(req: NextRequest) {
     try {
+        const throttled = limit(req, 'checkout', 8, 60_000);
+        if (throttled) return throttled;
+        if (!process.env.MERCADO_PAGO_ACCESS_TOKEN) {
+            return NextResponse.json({ error: 'El pago con tarjeta aún no está configurado.' }, { status: 503 });
+        }
         const body = await req.json();
-        const { id, title, price, description, picture_url } = body;
+        const { id } = body;
 
-        if (!id || !title || !price) {
+        if (!id || typeof id !== 'string') {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -28,6 +34,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Artwork is no longer available' }, { status: 400 });
         }
 
+        const amount = Number(artwork.price);
+        if (!Number.isFinite(amount) || amount <= 0) {
+            return NextResponse.json({ error: 'Esta obra no tiene un precio de venta válido.' }, { status: 400 });
+        }
+
         const preference = new Preference(client);
 
         const result = await preference.create({
@@ -35,11 +46,11 @@ export async function POST(req: NextRequest) {
                 items: [
                     {
                         id,
-                        title,
-                        unit_price: Number(price),
+                        title: artwork.title,
+                        unit_price: amount,
                         quantity: 1,
-                        description: description || '',
-                        picture_url: picture_url || '',
+                        description: artwork.description || '',
+                        picture_url: artwork.imageUrl || '',
                     },
                 ],
                 back_urls: {
@@ -60,7 +71,7 @@ export async function POST(req: NextRequest) {
             artworkId: id,
             preferenceId: result.id || '',
             externalReference: id,
-            amountUsd: price.toString(),
+            amountUsd: amount.toString(),
             status: 'pending',
         }).onConflictDoNothing();
 

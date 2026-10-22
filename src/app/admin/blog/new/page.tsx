@@ -2,16 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePrivy } from '@privy-io/react-auth';
 import { blogService } from '../../../../lib/blog';
-import { WHITELISTED_EMAIL } from '../../../../lib/constants';
 import { Upload } from 'lucide-react';
 import RichTextEditor from '../../../../components/ui/RichTextEditor';
 
-import type { User } from '../../../../types';
-
 export default function NewBlogPostPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { ready, authenticated, user } = usePrivy();
+  const [accessReady, setAccessReady] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [excerpt, setExcerpt] = useState('');
@@ -21,18 +20,13 @@ export default function NewBlogPostPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
+    if (!ready) return;
+    if (!authenticated || !user) {
       router.push('/login');
       return;
     }
-    const parsed = JSON.parse(storedUser) as User;
-    if (!parsed.isAdmin || parsed.email.toLowerCase() !== WHITELISTED_EMAIL.toLowerCase()) {
-      router.push('/login');
-      return;
-    }
-    setUser(parsed);
-  }, [router]);
+    setAccessReady(true);
+  }, [router, ready, authenticated, user]);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -93,7 +87,7 @@ export default function NewBlogPostPage() {
     }
   }
 
-  if (!user) {
+  if (!accessReady) {
     return (
       <main className="min-h-screen pt-32 flex items-center justify-center sacred-minimal">
         <div className="sacred-dot animate-subtle-glow" />

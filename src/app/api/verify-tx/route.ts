@@ -19,6 +19,8 @@ const ERC20_TRANSFER_ABI = parseAbi([
 ]);
 
 export async function POST(request: NextRequest) {
+  return NextResponse.json({ error: 'Los pagos con cripto están temporalmente desactivados.' }, { status: 410 });
+  /*
   try {
     const { orderId, txHash, chainId } = await request.json();
 
@@ -152,4 +154,5 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+  */
 }

@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ConnectWalletWrapper from './ConnectWalletWrapper';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,12 +30,11 @@ export default function Navigation() {
   }, [isHome]);
 
   const navItems = [
-    { href: '/',             label: 'Home',      sub: 'Inicio'    },
-    { href: '/portfolio',    label: 'Portfolio', sub: 'Trabajos'  },
-    { href: '/tattoos',      label: 'Tattoos',   sub: 'Ink'       },
-    { href: '/blog',         label: 'Journal',   sub: 'Blog'      },
-    { href: '/reservations', label: 'Book',      sub: 'Reservas'  },
-    { href: '/about',        label: 'About',     sub: 'Conóceme'  },
+    { href: '/',             label: 'Inicio',      sub: 'Inicio' },
+    { href: '/portfolio',    label: 'Portafolio',  sub: 'Obra' },
+    { href: '/services',     label: 'Servicios',   sub: 'Sesiones' },
+    { href: '/reservations', label: 'Reservas',    sub: 'Agenda' },
+    { href: '/about',        label: 'Sobre mí',    sub: 'Martina' },
   ];
 
   return (
@@ -151,16 +149,9 @@ export default function Navigation() {
               ))}
             </nav>
 
-            {/* Wallet */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6, delay: navItems.length * 0.07 + 0.1 }}
-              className="relative z-10 mt-10 pt-6 border-t border-[#1a1a1a]"
-            >
-              <ConnectWalletWrapper />
-            </motion.div>
+            <a href="mailto:martinagorozo@gmail.com" className="relative z-10 mt-10 text-[10px] tracking-[0.2em] text-[#c8bfba] hover:text-white transition-colors">
+              martinagorozo@gmail.com
+            </a>
 
             {/* Decorative vertical thread */}
             <motion.div

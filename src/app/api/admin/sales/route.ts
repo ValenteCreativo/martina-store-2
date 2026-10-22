@@ -1,26 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, cryptoOrders, mercadoPagoOrders, artworks, walletUsers, shippingAddresses } from '../../../../db';
 import { desc, eq } from 'drizzle-orm';
-import { WHITELISTED_EMAIL } from '../../../../lib/constants';
 import { summarizeOrders } from '../../../../lib/admin';
+import { requireAdmin } from '../../../../lib/admin-auth';
 
 export async function GET(request: NextRequest) {
-  const adminEmail = request.headers.get('x-admin-email');
-  if (!adminEmail || adminEmail.toLowerCase() !== WHITELISTED_EMAIL.toLowerCase()) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-  }
+  const auth = await requireAdmin(request);
+  if ('error' in auth) return auth.error;
 
   try {
-    // Verify against walletUsers table
-    const [adminUser] = await db
-      .select()
-      .from(walletUsers)
-      .where(eq(walletUsers.email, adminEmail.toLowerCase()));
-
-    if (!adminUser || !adminUser.isWhitelisted) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
     const { searchParams } = new URL(request.url);
     const statusFilter = searchParams.get('status');
     const limit = Math.min(Number(searchParams.get('limit') || 50), 200);

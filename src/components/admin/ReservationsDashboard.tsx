@@ -1,292 +1,44 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { WHITELISTED_EMAIL } from '../../lib/constants';
+import { useEffect, useMemo, useState } from 'react';
+import { CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, Mail, Phone, Plus, Trash2 } from 'lucide-react';
 
-type Reservation = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string | null;
-  instagram: string | null;
-  sessionType: string;
-  description: string;
-  placement: string | null;
-  sizeApprox: string | null;
-  referenceImageUrl: string | null;
-  additionalNotes: string | null;
-  preferredDate: string | null;
-  preferredTime: string | null;
-  status: string;
-  adminNotes: string | null;
-  createdAt: string;
-};
+type Reservation = { id: string; name: string; email: string; phone: string | null; instagram: string | null; sessionType: string; description: string; placement: string | null; sizeApprox: string | null; referenceImageUrl: string | null; additionalNotes: string | null; preferredDate: string | null; preferredTime: string | null; scheduledAt: string | null; durationMinutes: number | null; status: string; adminNotes: string | null; createdAt: string; };
+type Availability = { id: string; startsAt: string; endsAt: string; note: string | null; };
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'text-amber-400 border-amber-400/30 bg-amber-400/5',
-  contacted: 'text-sky-400 border-sky-400/30 bg-sky-400/5',
-  confirmed: 'text-green-400 border-green-400/30 bg-green-400/5',
-  completed: 'text-emerald-400 border-emerald-400/30 bg-emerald-400/5',
-  cancelled: 'text-red-400 border-red-400/30 bg-red-400/5',
-};
+const statuses = ['pending', 'contacted', 'confirmed', 'completed', 'cancelled'];
+const labels: Record<string, string> = { pending: 'Nueva', contacted: 'Contactada', confirmed: 'Confirmada', completed: 'Completada', cancelled: 'Cancelada' };
+const badge: Record<string, string> = { pending: 'border-amber-400/30 bg-amber-400/10 text-amber-200', contacted: 'border-sky-400/30 bg-sky-400/10 text-sky-200', confirmed: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200', completed: 'border-white/15 bg-white/5 text-white/65', cancelled: 'border-red-400/25 bg-red-400/10 text-red-200' };
+const dateLabel = new Intl.DateTimeFormat('es-MX', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-const STATUSES = ['pending', 'contacted', 'confirmed', 'completed', 'cancelled'];
-
-interface Props {
-  adminEmail: string;
+export default function ReservationsDashboard({ getAccessToken }: { getAccessToken: () => Promise<string | null> }) {
+  const [reservations, setReservations] = useState<Reservation[]>([]); const [slots, setSlots] = useState<Availability[]>([]);
+  const [view, setView] = useState<'requests' | 'calendar'>('requests'); const [filter, setFilter] = useState('all'); const [selected, setSelected] = useState<Reservation | null>(null); const [loading, setLoading] = useState(true); const [month, setMonth] = useState(() => new Date());
+  const headers = async (): Promise<Record<string, string>> => { const token = await getAccessToken(); return token ? { Authorization: `Bearer ${token}` } : {}; };
+  const load = async () => { setLoading(true); try { const auth = await headers(); const [r, a] = await Promise.all([fetch('/api/reservations', { headers: auth }), fetch('/api/availability', { headers: auth })]); const reservationsData = await r.json(); const availabilityData = await a.json(); if (!r.ok) throw new Error(reservationsData.error); setReservations(reservationsData.reservations || []); setSlots(availabilityData.slots || []); } finally { setLoading(false); } };
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const filtered = useMemo(() => filter === 'all' ? reservations : reservations.filter((r) => r.status === filter), [filter, reservations]);
+  const update = async (id: string, data: Partial<Reservation>) => { const response = await fetch(`/api/reservations/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...(await headers()) }, body: JSON.stringify(data) }); const json = await response.json(); if (!response.ok) throw new Error(json.error || 'No se pudo guardar'); setReservations((current) => current.map((r) => r.id === id ? json.reservation : r)); setSelected((current) => current?.id === id ? json.reservation : current); };
+  const addSlot = async (data: { startsAt: string; endsAt: string; note: string }) => { const response = await fetch('/api/availability', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(await headers()) }, body: JSON.stringify(data) }); const json = await response.json(); if (!response.ok) throw new Error(json.error || 'No se pudo guardar'); setSlots((current) => [...current, json.slot]); };
+  const removeSlot = async (id: string) => { const response = await fetch(`/api/availability?id=${id}`, { method: 'DELETE', headers: await headers() }); if (!response.ok) throw new Error('No se pudo eliminar el bloque'); setSlots((current) => current.filter((slot) => slot.id !== id)); };
+  const counts = statuses.reduce((all, status) => ({ ...all, [status]: reservations.filter((r) => r.status === status).length }), {} as Record<string, number>);
+  return <section className="space-y-8"><div className="flex flex-col justify-between gap-5 border-b border-white/10 pb-6 md:flex-row md:items-end"><div><p className="text-[10px] uppercase tracking-[.3em] text-[#a51f2d]">Operación</p><h2 className="mt-2 text-3xl text-white">Reservas y agenda</h2><p className="mt-2 text-sm text-white/55">De solicitud a sesión confirmada, en un solo lugar.</p></div><div className="flex border border-white/15 text-[10px] uppercase tracking-[.18em]"><button onClick={() => setView('requests')} className={`px-4 py-3 ${view === 'requests' ? 'bg-[#a51f2d] text-white' : 'text-white/60 hover:text-white'}`}>Solicitudes</button><button onClick={() => setView('calendar')} className={`px-4 py-3 ${view === 'calendar' ? 'bg-[#a51f2d] text-white' : 'text-white/60 hover:text-white'}`}>Agenda</button></div></div>{view === 'requests' ? <><div className="grid grid-cols-2 gap-3 md:grid-cols-5">{statuses.map((status) => <button key={status} onClick={() => setFilter(filter === status ? 'all' : status)} className={`border p-4 text-left transition ${filter === status ? 'border-[#a51f2d] bg-[#a51f2d]/10' : 'border-white/10 hover:border-white/25'}`}><p className="text-[10px] uppercase tracking-[.18em] text-white/50">{labels[status]}</p><p className="mt-2 text-2xl text-white">{counts[status]}</p></button>)}</div>{loading ? <p className="py-10 text-sm text-white/50">Cargando solicitudes…</p> : <div className="space-y-3">{filtered.length === 0 ? <Empty /> : filtered.map((reservation) => <article key={reservation.id} onClick={() => setSelected(reservation)} className="cursor-pointer border border-white/10 bg-black/20 p-5 transition hover:border-[#a51f2d]/70 hover:bg-[#a51f2d]/[.04]"><div className="flex flex-col gap-3 md:flex-row md:items-center"><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="text-base text-white">{reservation.name}</h3><span className={`border px-2 py-0.5 text-[9px] uppercase tracking-[.14em] ${badge[reservation.status]}`}>{labels[reservation.status]}</span><span className="text-[10px] uppercase tracking-[.15em] text-white/45">{reservation.sessionType}</span></div><p className="mt-1 text-xs text-white/55">{reservation.email}{reservation.phone ? ` · ${reservation.phone}` : ''}</p><p className="mt-2 line-clamp-1 text-sm text-white/65">{reservation.description}</p></div><div className="text-left text-xs text-white/50 md:text-right">{reservation.scheduledAt ? <><p className="text-[#d8a0a5]">{dateLabel.format(new Date(reservation.scheduledAt))}</p><p>Sesión agendada</p></> : <><p>{new Date(reservation.createdAt).toLocaleDateString('es-MX')}</p><p>Sin fecha asignada</p></>}</div></div></article>)}</div>}</> : <Agenda month={month} setMonth={setMonth} reservations={reservations} slots={slots} onAdd={addSlot} onDelete={removeSlot} />}{selected && <ReservationDrawer reservation={selected} onClose={() => setSelected(null)} onUpdate={update} />}</section>;
 }
 
-export default function ReservationsDashboard({ adminEmail }: Props) {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selected, setSelected] = useState<Reservation | null>(null);
+function Empty() { return <div className="border border-dashed border-white/15 py-16 text-center text-sm text-white/45">No hay solicitudes en esta vista.</div>; }
 
-  const load = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.set('status', statusFilter);
-
-      const res = await fetch(`/api/reservations?${params.toString()}`, {
-        headers: { 'x-admin-email': adminEmail },
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Failed to load');
-      setReservations(json.reservations || []);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { load(); }, [statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const updateStatus = async (id: string, status: string, adminNotes?: string) => {
-    try {
-      const res = await fetch(`/api/reservations/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-email': adminEmail,
-        },
-        body: JSON.stringify({ status, adminNotes }),
-      });
-      if (!res.ok) throw new Error('Failed to update');
-      setReservations((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status, adminNotes: adminNotes ?? r.adminNotes } : r))
-      );
-      if (selected?.id === id) setSelected((prev) => prev ? { ...prev, status } : null);
-    } catch (err) {
-      alert((err as Error).message);
-    }
-  };
-
-  const counts = STATUSES.reduce((acc, s) => {
-    acc[s] = reservations.filter((r) => r.status === s).length;
-    return acc;
-  }, {} as Record<string, number>);
-
-  return (
-    <div className="space-y-8">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {STATUSES.map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatusFilter(statusFilter === s ? 'all' : s)}
-            className={`glass-minimal p-3 rounded-lg text-left border transition-all ${
-              statusFilter === s ? 'border-[#8a1c1c]/50' : 'border-[#1a1a1a]'
-            }`}
-          >
-            <p className="text-[10px] uppercase tracking-widest text-[#8b7d7b] mb-1">{s}</p>
-            <p className="text-xl text-[#e5e5e5] font-light">{counts[s] || 0}</p>
-          </button>
-        ))}
-      </div>
-
-      {loading && <p className="text-sm text-[#8b7d7b]">Loading reservations...</p>}
-      {error && <p className="text-sm text-red-400">Error: {error}</p>}
-
-      {!loading && reservations.length === 0 && (
-        <div className="glass-minimal p-12 rounded-lg text-center">
-          <p className="text-[#8b7d7b] font-light">No reservations yet.</p>
-        </div>
-      )}
-
-      {/* Reservation List */}
-      <div className="space-y-3">
-        {reservations.map((r) => (
-          <div
-            key={r.id}
-            className="glass-minimal p-5 rounded-lg flex flex-col md:flex-row md:items-center gap-4 hover-lift cursor-pointer"
-            onClick={() => setSelected(r)}
-          >
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-1 flex-wrap">
-                <h3 className="text-[#e5e5e5] font-light">{r.name}</h3>
-                <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_COLORS[r.status] || ''}`}>
-                  {r.status}
-                </span>
-                <span className="text-[10px] text-[#8b7d7b] uppercase tracking-widest">{r.sessionType}</span>
-              </div>
-              <p className="text-xs text-[#8b7d7b]">{r.email}{r.instagram && ` · @${r.instagram}`}</p>
-              <p className="text-xs text-[#606060] mt-1 line-clamp-1">{r.description}</p>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-[#8b7d7b] flex-shrink-0">
-              {r.preferredDate && <span>{r.preferredDate}</span>}
-              <span>{new Date(r.createdAt).toLocaleDateString()}</span>
-              <select
-                value={r.status}
-                onChange={(e) => { e.stopPropagation(); updateStatus(r.id, e.target.value); }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-transparent border border-[#1a1a1a] rounded px-2 py-1 text-xs text-[#e5e5e5]"
-              >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s} className="bg-[#0b0b0b]">{s}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Detail Modal */}
-      {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setSelected(null)}>
-          <div
-            className="glass-minimal p-8 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-4 right-4 text-[#8b7d7b] hover:text-white text-xs uppercase tracking-widest"
-              onClick={() => setSelected(null)}
-            >
-              Close
-            </button>
-
-            <div className="flex items-center gap-3 mb-6">
-              <h3 className="elegant-text text-sm">{selected.name}</h3>
-              <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_COLORS[selected.status] || ''}`}>
-                {selected.status}
-              </span>
-            </div>
-
-            <div className="space-y-4 text-sm">
-              <Row label="Email" value={selected.email} />
-              {selected.phone && <Row label="Phone" value={selected.phone} />}
-              {selected.instagram && <Row label="Instagram" value={`@${selected.instagram}`} />}
-              <Row label="Session Type" value={selected.sessionType} />
-              <Row label="Description" value={selected.description} multiline />
-              {selected.placement && <Row label="Placement" value={selected.placement} />}
-              {selected.sizeApprox && <Row label="Size" value={selected.sizeApprox} />}
-              {selected.preferredDate && <Row label="Preferred Date" value={`${selected.preferredDate}${selected.preferredTime ? ` · ${selected.preferredTime}` : ''}`} />}
-              {selected.additionalNotes && <Row label="Notes" value={selected.additionalNotes} multiline />}
-              {selected.referenceImageUrl && (
-                <div>
-                  <span className="text-[#8b7d7b] block mb-1">Reference Image</span>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={selected.referenceImageUrl} alt="Reference" className="max-h-48 rounded border border-[#1a1a1a]" />
-                </div>
-              )}
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <label className="elegant-text text-xs block mb-1">Admin Notes</label>
-              <AdminNotesEditor
-                reservationId={selected.id}
-                initialNotes={selected.adminNotes || ''}
-                adminEmail={adminEmail}
-                onSave={(notes) => {
-                  setSelected((prev) => prev ? { ...prev, adminNotes: notes } : null);
-                  setReservations((prev) =>
-                    prev.map((r) => r.id === selected.id ? { ...r, adminNotes: notes } : r)
-                  );
-                }}
-              />
-              <div className="flex gap-2 pt-2">
-                <label className="text-xs text-[#8b7d7b]">Update Status:</label>
-                <select
-                  value={selected.status}
-                  onChange={(e) => updateStatus(selected.id, e.target.value)}
-                  className="bg-transparent border border-[#1a1a1a] rounded px-2 py-1 text-xs text-[#e5e5e5] flex-1"
-                >
-                  {STATUSES.map((s) => (
-                    <option key={s} value={s} className="bg-[#0b0b0b]">{s}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function Agenda({ month, setMonth, reservations, slots, onAdd, onDelete }: { month: Date; setMonth: (date: Date) => void; reservations: Reservation[]; slots: Availability[]; onAdd: (data: { startsAt: string; endsAt: string; note: string }) => Promise<void>; onDelete: (id: string) => Promise<void> }) {
+  const [form, setForm] = useState({ startsAt: '', endsAt: '', note: '' }); const [saving, setSaving] = useState(false);
+  const days = useMemo(() => { const first = new Date(month.getFullYear(), month.getMonth(), 1); const start = new Date(first); start.setDate(1 - ((first.getDay() + 6) % 7)); return Array.from({ length: 42 }, (_, index) => { const date = new Date(start); date.setDate(start.getDate() + index); return date; }); }, [month]);
+  const key = (date: Date | string) => new Date(date).toLocaleDateString('en-CA'); const sameDay = (date: Date, value: string | null) => value && key(date) === key(value);
+  const save = async (event: React.FormEvent) => { event.preventDefault(); setSaving(true); try { await onAdd(form); setForm({ startsAt: '', endsAt: '', note: '' }); } catch (error) { alert((error as Error).message); } finally { setSaving(false); } };
+  return <div className="grid gap-8 xl:grid-cols-[1fr_320px]"><div className="border border-white/10 bg-black/20 p-4 md:p-6"><div className="mb-6 flex items-center justify-between"><button aria-label="Mes anterior" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="p-2 text-white/55 hover:text-white"><ChevronLeft size={18} /></button><h3 className="text-lg text-white capitalize">{month.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}</h3><button aria-label="Mes siguiente" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="p-2 text-white/55 hover:text-white"><ChevronRight size={18} /></button></div><div className="grid grid-cols-7 border-l border-t border-white/10">{['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => <div key={day} className="border-b border-r border-white/10 p-2 text-center text-[9px] uppercase tracking-[.15em] text-white/40">{day}</div>)}{days.map((day) => { const daySlots = slots.filter((slot) => sameDay(day, slot.startsAt)); const daySessions = reservations.filter((reservation) => reservation.scheduledAt && reservation.status !== 'cancelled' && sameDay(day, reservation.scheduledAt)); return <div key={day.toISOString()} className={`min-h-24 border-b border-r border-white/10 p-2 ${day.getMonth() === month.getMonth() ? '' : 'bg-black/30 text-white/25'}`}><p className="text-xs text-white/70">{day.getDate()}</p><div className="mt-1 space-y-1">{daySlots.map((slot) => <div key={slot.id} title={`${new Date(slot.startsAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })} disponible`} className="h-1.5 bg-[#a51f2d]/70" />)}{daySessions.map((reservation) => <div key={reservation.id} title={`${reservation.name}: ${reservation.sessionType}`} className="truncate bg-[#e5e5e5]/15 px-1 py-0.5 text-[8px] text-white">{reservation.name}</div>)}</div></div>; })}</div><div className="mt-5 flex flex-wrap gap-4 text-[10px] uppercase tracking-[.14em] text-white/55"><span><i className="mr-1 inline-block h-2 w-2 bg-[#a51f2d]" /> Disponible</span><span><i className="mr-1 inline-block h-2 w-2 bg-white/25" /> Sesión confirmada</span></div></div><aside className="border border-white/10 p-5"><div className="flex items-center gap-2 text-white"><CalendarDays size={16} /><h3 className="text-sm uppercase tracking-[.14em]">Abrir disponibilidad</h3></div><p className="mt-2 text-xs leading-relaxed text-white/50">Crea bloques que Martina puede ofrecer al responder una solicitud.</p><form className="mt-5 space-y-3" onSubmit={save}><label className="block text-[10px] uppercase tracking-[.14em] text-white/55">Desde<input required type="datetime-local" value={form.startsAt} onChange={(e) => setForm({ ...form, startsAt: e.target.value })} className="mt-1 w-full border border-white/15 bg-transparent p-2 text-sm text-white" /></label><label className="block text-[10px] uppercase tracking-[.14em] text-white/55">Hasta<input required type="datetime-local" value={form.endsAt} onChange={(e) => setForm({ ...form, endsAt: e.target.value })} className="mt-1 w-full border border-white/15 bg-transparent p-2 text-sm text-white" /></label><label className="block text-[10px] uppercase tracking-[.14em] text-white/55">Nota opcional<input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className="mt-1 w-full border border-white/15 bg-transparent p-2 text-sm text-white" placeholder="Ej. sesiones de tatuaje" /></label><button disabled={saving} className="flex w-full items-center justify-center gap-2 bg-[#a51f2d] px-3 py-3 text-[10px] uppercase tracking-[.16em] text-white hover:bg-[#bd2b3b] disabled:opacity-50"><Plus size={14} />{saving ? 'Guardando' : 'Añadir bloque'}</button></form><div className="mt-7 space-y-2 border-t border-white/10 pt-4">{slots.filter((slot) => new Date(slot.startsAt) >= new Date()).slice(0, 5).map((slot) => <div key={slot.id} className="flex items-start justify-between gap-2 text-xs text-white/60"><span>{dateLabel.format(new Date(slot.startsAt))}{slot.note ? ` · ${slot.note}` : ''}</span><button onClick={() => onDelete(slot.id)} aria-label="Eliminar bloque" className="text-white/40 hover:text-red-300"><Trash2 size={14} /></button></div>)}</div></aside></div>;
 }
 
-function Row({ label, value, multiline = false }: { label: string; value: string; multiline?: boolean }) {
-  return (
-    <div>
-      <span className="text-[#8b7d7b] text-xs uppercase tracking-widest block mb-0.5">{label}</span>
-      {multiline ? (
-        <p className="text-[#e5e5e5] font-light leading-relaxed whitespace-pre-wrap">{value}</p>
-      ) : (
-        <span className="text-[#e5e5e5] font-light">{value}</span>
-      )}
-    </div>
-  );
+function ReservationDrawer({ reservation, onClose, onUpdate }: { reservation: Reservation; onClose: () => void; onUpdate: (id: string, data: Partial<Reservation>) => Promise<void> }) {
+  const [notes, setNotes] = useState(reservation.adminNotes || ''); const [status, setStatus] = useState(reservation.status); const [scheduledAt, setScheduledAt] = useState(reservation.scheduledAt ? new Date(reservation.scheduledAt).toISOString().slice(0, 16) : ''); const [duration, setDuration] = useState(String(reservation.durationMinutes || 120)); const [saving, setSaving] = useState(false);
+  const save = async () => { setSaving(true); try { await onUpdate(reservation.id, { status, adminNotes: notes, scheduledAt: scheduledAt || null, durationMinutes: Number(duration) }); } catch (error) { alert((error as Error).message); } finally { setSaving(false); } };
+  return <div className="fixed inset-0 z-[100] flex justify-end bg-black/70" onClick={onClose}><aside className="h-full w-full max-w-xl overflow-y-auto border-l border-white/15 bg-[#0a0908] p-6 md:p-8" onClick={(event) => event.stopPropagation()}><button onClick={onClose} className="text-[10px] uppercase tracking-[.18em] text-white/50 hover:text-white">← Cerrar</button><div className="mt-8 border-b border-white/10 pb-6"><p className="text-[10px] uppercase tracking-[.2em] text-[#a51f2d]">Solicitud</p><h3 className="mt-2 text-3xl text-white">{reservation.name}</h3><div className="mt-3 flex flex-wrap gap-3 text-sm text-white/60"><a href={`mailto:${reservation.email}`} className="flex items-center gap-1 hover:text-white"><Mail size={14} /> {reservation.email}</a>{reservation.phone && <a href={`tel:${reservation.phone}`} className="flex items-center gap-1 hover:text-white"><Phone size={14} /> {reservation.phone}</a>}</div></div><div className="space-y-5 py-6 text-sm"><Info label="Servicio" value={reservation.sessionType} /><Info label="Intención / idea" value={reservation.description} /><Info label="Zona" value={reservation.placement} /><Info label="Medida" value={reservation.sizeApprox} />{reservation.additionalNotes && <Info label="Algo más" value={reservation.additionalNotes} />}{reservation.referenceImageUrl && <a className="flex items-center gap-2 text-[#d8a0a5] hover:text-white" target="_blank" rel="noreferrer" href={reservation.referenceImageUrl}><ExternalLink size={15} /> Abrir referencia visual</a>}</div><div className="border-t border-white/10 pt-6"><p className="text-[10px] uppercase tracking-[.2em] text-[#a51f2d]">Gestionar sesión</p><div className="mt-4 grid gap-4 md:grid-cols-2"><label className="text-[10px] uppercase tracking-[.14em] text-white/55">Estado<select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1 w-full border border-white/15 bg-[#0a0908] p-2 text-sm text-white">{statuses.map((item) => <option key={item} value={item}>{labels[item]}</option>)}</select></label><label className="text-[10px] uppercase tracking-[.14em] text-white/55">Duración (min)<input min="15" max="720" step="15" type="number" value={duration} onChange={(e) => setDuration(e.target.value)} className="mt-1 w-full border border-white/15 bg-transparent p-2 text-sm text-white" /></label></div><label className="mt-4 block text-[10px] uppercase tracking-[.14em] text-white/55">Fecha confirmada<input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="mt-1 w-full border border-white/15 bg-transparent p-2 text-sm text-white" /></label><label className="mt-4 block text-[10px] uppercase tracking-[.14em] text-white/55">Notas internas<textarea rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-1 w-full resize-none border border-white/15 bg-transparent p-2 text-sm leading-relaxed text-white" placeholder="Seguimiento, cotización, diseño, recordatorios…" /></label><button onClick={save} disabled={saving} className="mt-5 flex w-full items-center justify-center gap-2 bg-[#a51f2d] py-3 text-[10px] uppercase tracking-[.18em] text-white hover:bg-[#bd2b3b] disabled:opacity-50"><Check size={14} />{saving ? 'Guardando…' : 'Guardar cambios'}</button></div></aside></div>;
 }
 
-function AdminNotesEditor({
-  reservationId,
-  initialNotes,
-  adminEmail,
-  onSave,
-}: {
-  reservationId: string;
-  initialNotes: string;
-  adminEmail: string;
-  onSave: (notes: string) => void;
-}) {
-  const [notes, setNotes] = useState(initialNotes);
-  const [saving, setSaving] = useState(false);
-
-  const save = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/reservations/${reservationId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
-        body: JSON.stringify({ adminNotes: notes }),
-      });
-      if (!res.ok) throw new Error('Failed to save');
-      onSave(notes);
-    } catch {
-      alert('Error saving notes');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <textarea
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        rows={3}
-        className="w-full px-3 py-2 minimal-border rounded bg-transparent text-white text-sm font-light focus:border-[#8b7d7b] transition-colors resize-none"
-        placeholder="Internal notes..."
-      />
-      <button
-        onClick={save}
-        disabled={saving}
-        className="btn-elegant text-xs px-4 py-2"
-      >
-        {saving ? 'Saving...' : 'Save Notes'}
-      </button>
-    </div>
-  );
-}
+function Info({ label, value }: { label: string; value: string | null }) { return value ? <div><p className="text-[10px] uppercase tracking-[.16em] text-white/45">{label}</p><p className="mt-1 whitespace-pre-wrap leading-relaxed text-white/80">{value}</p></div> : null; }

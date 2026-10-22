@@ -15,6 +15,13 @@
       "when": 1780970991334,
       "tag": "0001_cynical_zaladane",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792646100000,
+      "tag": "0002_admin_agenda",
+      "breakpoints": true
     }
   ]
 }

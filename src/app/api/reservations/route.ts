@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, reservations } from '../../../db';
 import { desc, eq } from 'drizzle-orm';
-import { WHITELISTED_EMAIL } from '../../../lib/constants';
+import { requireAdmin } from '../../../lib/admin-auth';
+import { limit } from '../../../lib/rate-limit';
 
 // POST: Submit a new reservation request
 export async function POST(request: NextRequest) {
     try {
+        const throttled = limit(request, 'reservation', 5, 60 * 60_000);
+        if (throttled) return throttled;
         const {
             name,
             email,
@@ -22,7 +25,7 @@ export async function POST(request: NextRequest) {
         } = await request.json();
 
         // Validate required fields
-        if (!name || !email || !sessionType || !description) {
+        if (!name || !email || !sessionType || !description || typeof name !== 'string' || typeof description !== 'string' || name.length > 120 || description.length > 5000) {
             return NextResponse.json(
                 { error: 'Name, email, session type and description are required' },
                 { status: 400 }
@@ -63,10 +66,8 @@ export async function POST(request: NextRequest) {
 
 // GET: Admin only — list all reservations
 export async function GET(request: NextRequest) {
-    const adminEmail = request.headers.get('x-admin-email');
-    if (!adminEmail || adminEmail.toLowerCase() !== WHITELISTED_EMAIL.toLowerCase()) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    const auth = await requireAdmin(request);
+    if ('error' in auth) return auth.error;
 
     try {
         const { searchParams } = new URL(request.url);

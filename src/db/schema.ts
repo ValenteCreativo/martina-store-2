@@ -154,6 +154,10 @@ export const reservations = pgTable('reservations', {
     preferredDate: varchar('preferred_date', { length: 100 }),
     preferredTime: varchar('preferred_time', { length: 100 }),
 
+    // Appointment set by Martina from the admin agenda
+    scheduledAt: timestamp('scheduled_at'),
+    durationMinutes: integer('duration_minutes').default(120),
+
     // Status: pending, contacted, confirmed, completed, cancelled
     status: varchar('status', { length: 50 }).default('pending'),
 
@@ -162,6 +166,15 @@ export const reservations = pgTable('reservations', {
 
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Availability blocks are managed by Martina and sit alongside confirmed sessions.
+export const availabilitySlots = pgTable('availability_slots', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    startsAt: timestamp('starts_at').notNull(),
+    endsAt: timestamp('ends_at').notNull(),
+    note: varchar('note', { length: 255 }),
+    createdAt: timestamp('created_at').defaultNow(),
 });
 
 // Type exports for use in application code
@@ -191,3 +204,5 @@ export type NewMercadoPagoOrder = typeof mercadoPagoOrders.$inferInsert;
 
 export type Reservation = typeof reservations.$inferSelect;
 export type NewReservation = typeof reservations.$inferInsert;
+export type AvailabilitySlot = typeof availabilitySlots.$inferSelect;
+export type NewAvailabilitySlot = typeof availabilitySlots.$inferInsert;

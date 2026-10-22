@@ -4,6 +4,7 @@ import { db, artworks, categories, blogPosts } from '../db';
 import { eq, asc, desc } from 'drizzle-orm';
 import { put, del } from '@vercel/blob';
 import type { NewArtwork, NewCategory, NewBlogPost } from '../db/schema';
+import { assertServerAdmin } from '../lib/admin-auth';
 
 // --- Artwork Actions ---
 
@@ -40,6 +41,7 @@ export async function getArtworksByCategory(category: string) {
 
 export async function createArtwork(artwork: NewArtwork) {
     try {
+        await assertServerAdmin();
         const [data] = await db.insert(artworks).values(artwork).returning();
         return { data, error: null };
     } catch (error) {
@@ -49,6 +51,7 @@ export async function createArtwork(artwork: NewArtwork) {
 
 export async function updateArtwork(id: string, artwork: Partial<NewArtwork>) {
     try {
+        await assertServerAdmin();
         const [data] = await db.update(artworks).set({ ...artwork, updatedAt: new Date() }).where(eq(artworks.id, id)).returning();
         return { data, error: null };
     } catch (error) {
@@ -58,6 +61,7 @@ export async function updateArtwork(id: string, artwork: Partial<NewArtwork>) {
 
 export async function deleteArtwork(id: string) {
     try {
+        await assertServerAdmin();
         await db.delete(artworks).where(eq(artworks.id, id));
         return { error: null };
     } catch (error) {
@@ -78,6 +82,7 @@ export async function getAllCategories() {
 
 export async function createCategory(category: NewCategory) {
     try {
+        await assertServerAdmin();
         const [data] = await db.insert(categories).values(category).returning();
         return { data, error: null };
     } catch (error) {
@@ -87,6 +92,7 @@ export async function createCategory(category: NewCategory) {
 
 export async function updateCategory(id: string, category: Partial<NewCategory>) {
     try {
+        await assertServerAdmin();
         const [data] = await db.update(categories).set(category).where(eq(categories.id, id)).returning();
         return { data, error: null };
     } catch (error) {
@@ -96,6 +102,7 @@ export async function updateCategory(id: string, category: Partial<NewCategory>)
 
 export async function deleteCategory(id: string) {
     try {
+        await assertServerAdmin();
         await db.delete(categories).where(eq(categories.id, id));
         return { error: null };
     } catch (error) {
@@ -138,6 +145,7 @@ export async function getBlogPostById(id: string) {
 
 export async function createBlogPost(post: NewBlogPost) {
     try {
+        await assertServerAdmin();
         const [data] = await db.insert(blogPosts).values(post).returning();
         return { data, error: null };
     } catch (error) {
@@ -148,6 +156,7 @@ export async function createBlogPost(post: NewBlogPost) {
 
 export async function updateBlogPost(id: string, post: Partial<NewBlogPost>) {
     try {
+        await assertServerAdmin();
         const [data] = await db.update(blogPosts).set({ ...post, updatedAt: new Date() }).where(eq(blogPosts.id, id)).returning();
         return { data, error: null };
     } catch (error) {
@@ -157,6 +166,7 @@ export async function updateBlogPost(id: string, post: Partial<NewBlogPost>) {
 
 export async function deleteBlogPost(id: string) {
     try {
+        await assertServerAdmin();
         await db.delete(blogPosts).where(eq(blogPosts.id, id));
         return { error: null };
     } catch (error) {
@@ -168,6 +178,7 @@ export async function deleteBlogPost(id: string) {
 
 export async function uploadFile(file: File, pathname: string) {
     try {
+        await assertServerAdmin();
         const blob = await put(pathname, file, { access: 'public' });
         return { url: blob.url, error: null };
     } catch (error) {
@@ -177,6 +188,7 @@ export async function uploadFile(file: File, pathname: string) {
 
 export async function deleteFile(url: string) {
     try {
+        await assertServerAdmin();
         await del(url);
         return { error: null };
     } catch (error) {

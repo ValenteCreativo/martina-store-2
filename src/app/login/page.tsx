@@ -4,56 +4,25 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { usePrivy } from '@privy-io/react-auth';
-import { useWallet } from '../../hooks/useWallet';
-import { WHITELISTED_EMAIL } from '../../lib/constants';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { ready, authenticated, user, login, logout } = usePrivy();
-  const { address, isLoading: walletLoading } = useWallet();
+  const { ready, authenticated, login } = usePrivy();
 
   const [error, setError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(false);
 
-  // When Privy session is ready/authenticated, verify whitelist and persist admin flag
+  // The server verifies the Privy access token and ADMIN_PRIVY_DIDS on each sensitive request.
   useEffect(() => {
     const verify = async () => {
-      if (!ready || !authenticated || !user) return;
+      if (!ready || !authenticated) return;
       setIsChecking(true);
       setError(null);
-
-      const emailAccount = user.linkedAccounts.find((account) => account.type === 'email');
-      const email =
-        emailAccount?.type === 'email'
-          ? (emailAccount as { type: 'email'; address: string }).address
-          : null;
-
-      if (!email || email.toLowerCase() !== WHITELISTED_EMAIL.toLowerCase()) {
-        setError('Solo el correo whitelisted puede acceder al panel.');
-        await logout();
-        setIsChecking(false);
-        return;
-      }
-
-      if (!address && !walletLoading) {
-        setError('Conecta o crea un wallet en Privy para continuar.');
-        setIsChecking(false);
-        return;
-      }
-
-      localStorage.setItem(
-        'user',
-        JSON.stringify({
-          email,
-          isAdmin: true,
-          walletAddress: address,
-        })
-      );
       router.push('/admin');
     };
 
     verify();
-  }, [ready, authenticated, user, address, walletLoading, logout, router]);
+  }, [ready, authenticated, router]);
 
   const handleLogin = async () => {
     setError(null);
@@ -77,7 +46,7 @@ export default function LoginPage() {
             </div>
             <h1 className="text-3xl font-light tracking-wider mb-2">Acceso admin</h1>
             <p className="text-sm text-[#c8bfba] font-light">
-              Inicia con Privy usando el correo whitelisted.
+              Inicia con Privy. El servidor verifica los permisos del panel.
             </p>
           </div>
 
@@ -85,7 +54,7 @@ export default function LoginPage() {
 
           <button
             onClick={handleLogin}
-            disabled={!ready || walletLoading || isChecking}
+            disabled={!ready || isChecking}
             className="w-full btn-elegant"
           >
             {!ready || isChecking ? 'Verificando...' : authenticated ? 'Entrar' : 'Sign in with Privy'}

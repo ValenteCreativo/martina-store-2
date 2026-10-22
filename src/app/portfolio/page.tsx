@@ -5,15 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { artworkService } from '../../lib/services';
-import { ShoppingBag } from 'lucide-react';
 import type { Artwork } from '../../types';
 
-type Filter = 'digital' | 'tattoo';
+type Filter = 'originals' | 'digital' | 'tattoo';
 
 export default function PortfolioPage() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<Filter>('digital');
+  const [filter, setFilter] = useState<Filter>('originals');
 
   useEffect(() => { loadArtworks(); }, []);
 
@@ -28,9 +27,10 @@ export default function PortfolioPage() {
     }
   }
 
-  const digital = artworks.filter(a => !a.category.toLowerCase().includes('tattoo'));
+  const originals = artworks.filter(a => a.category.toLowerCase().includes('original'));
+  const digital = artworks.filter(a => !a.category.toLowerCase().includes('tattoo') && !a.category.toLowerCase().includes('original'));
   const tattoos = artworks.filter(a => a.category.toLowerCase().includes('tattoo'));
-  const current = filter === 'digital' ? digital : tattoos;
+  const current = filter === 'originals' ? originals : filter === 'digital' ? digital : tattoos;
 
   return (
     <main className="min-h-screen pt-28 pb-24 bg-[#050505] text-[#e5e5e5]">
@@ -43,14 +43,16 @@ export default function PortfolioPage() {
           transition={{ duration: 0.8 }}
           className="mb-16 text-center"
         >
-          <p className="eyebrow mb-4">Archive · Works</p>
+          <p className="eyebrow mb-4">Galería · 2024 — 2026</p>
           <h1 className="page-title">Portfolio</h1>
+          <p className="mt-6 max-w-2xl mx-auto text-sm leading-relaxed text-[#c8bfba]">Desde niña dibujo ojos sin saber por qué. Con el tiempo entendí que no eran una obsesión, sino un portal: la fractalización del todo experimentándose a sí mismo.</p>
           <div className="h-12 accent-line mt-6" />
         </motion.div>
 
         {/* ── Tab switcher ── */}
         <div className="flex items-center justify-center mb-14">
           <div className="flex border border-[#1a1a1a]">
+            <TabButton active={filter === 'originals'} onClick={() => setFilter('originals')} count={originals.length}>Originales</TabButton>
             <TabButton
               active={filter === 'digital'}
               onClick={() => setFilter('digital')}
@@ -79,9 +81,9 @@ export default function PortfolioPage() {
             className="text-center text-[#c8bfba] font-light mb-14 max-w-xl mx-auto leading-relaxed"
             style={{ fontSize: 'var(--text-body)' }}
           >
-            {filter === 'digital'
-              ? 'Original digital works available for acquisition. Each piece is unique and signed.'
-              : 'A living record of handpoke tattoo work — sacred geometry, organic forms, personal rituals.'}
+            {filter === 'originals'
+              ? 'Cada pieza es original, única y está firmada.'
+              : filter === 'digital' ? 'Obra digital, ojos, raíces y geometrías en constante transformación.' : 'Línea fina y microrrealismo: botánica, insectos, objetos, ornamento y abstracción orgánica.'}
           </motion.p>
         </AnimatePresence>
 
@@ -92,7 +94,7 @@ export default function PortfolioPage() {
           </div>
         ) : current.length === 0 ? (
           <div className="text-center py-24">
-            <p className="meta-label">No works yet</p>
+            <p className="meta-label">Próximamente</p>
           </div>
         ) : (
           <AnimatePresence mode="wait">
@@ -192,10 +194,7 @@ function DigitalCard({ art, index }: { art: Artwork; index: number }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent
                           opacity-0 group-hover:opacity-100 transition-opacity duration-500
                           flex items-end justify-between p-4">
-            <span className="price-label">${art.price || 50}</span>
-            <div className="w-8 h-8 flex items-center justify-center bg-[#050505]/80 border border-[#2a2a2a] rounded-full">
-              <ShoppingBag size={13} className="text-[#c8bfba]" strokeWidth={1.5} />
-            </div>
+            <span className="text-[9px] uppercase tracking-[.18em] text-[#e5e5e5]">Ver obra</span>
           </div>
 
           {/* Availability dot */}
@@ -209,7 +208,7 @@ function DigitalCard({ art, index }: { art: Artwork; index: number }) {
           <h3 className="card-title truncate" style={{ fontSize: 'var(--text-body)' }}>
             {art.title}
           </h3>
-          <p className="meta-label">{art.medium || 'Digital · Mixed Media'}</p>
+          <p className="meta-label">{[art.technique || art.medium, art.dimensions, art.year].filter(Boolean).join(' · ')}</p>
         </div>
       </Link>
     </motion.div>
