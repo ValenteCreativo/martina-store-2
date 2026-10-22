@@ -2,29 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { artworkService } from '../../../lib/services';
 import ImageMagnifier from '../../../components/ui/ImageMagnifier';
-import PaymentSelector, { PaymentMethod, TokenType } from '../../../components/checkout/PaymentSelector';
-import ShippingForm from '../../../components/checkout/ShippingForm';
-import { DEFAULT_CHAIN_ID } from '../../../lib/crypto';
 import type { Artwork } from '../../../types';
-import { ArrowLeft, ShoppingBag, Loader2 } from 'lucide-react';
-
-// Dynamic import for Privy-dependent checkout flow
-const CryptoCheckoutFlow = dynamic(
-    () => import('../../../components/checkout/CryptoCheckoutFlow'),
-    {
-        ssr: false,
-        loading: () => (
-            <div className="p-8 border border-[#1a1a1a] flex items-center justify-center">
-                <Loader2 className="w-6 h-6 text-[#8a1c1c] animate-spin" />
-            </div>
-        ),
-    }
-);
+import { ArrowLeft, ShoppingBag } from 'lucide-react';
 
 export default function ArtworkDetailPage() {
     const params = useParams();
@@ -34,12 +17,6 @@ export default function ArtworkDetailPage() {
 
     // Payment state
     const [showPaymentOptions, setShowPaymentOptions] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mercadopago');
-    const [selectedChain, setSelectedChain] = useState(DEFAULT_CHAIN_ID);
-    const [selectedToken, setSelectedToken] = useState<TokenType>('USDC');
-    const [showCryptoPayment, setShowCryptoPayment] = useState(false);
-    const [showShippingForm, setShowShippingForm] = useState(false);
-    const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
 
     useEffect(() => {
         if (!params.id) return;
@@ -95,27 +72,6 @@ export default function ArtworkDetailPage() {
         setShowPaymentOptions(true);
     }
 
-    // Handle payment proceed
-    function handleProceedToPayment() {
-        if (paymentMethod === 'mercadopago') {
-            handleMercadoPagoCheckout();
-        } else {
-            setShowCryptoPayment(true);
-        }
-    }
-
-    // Handle crypto payment success
-    function handleCryptoSuccess(txHash: string, orderId: string) {
-        setCompletedOrderId(orderId);
-        setShowCryptoPayment(false);
-        setShowShippingForm(true);
-    }
-
-    // Handle shipping complete
-    function handleShippingComplete() {
-        setShowShippingForm(false);
-        router.push(`/success?type=crypto&orderId=${completedOrderId}`);
-    }
 
     if (loading) {
         return (
@@ -209,53 +165,24 @@ export default function ArtworkDetailPage() {
                             </div>
 
                             {/* Payment Options */}
-                            {showPaymentOptions && !showCryptoPayment && (
+                            {showPaymentOptions && (
                                 <div className="mb-6 p-6 border border-[#1a1a1a] bg-[#0a0a0a]">
                                     <h3 className="text-xs uppercase tracking-widest text-[#606060] mb-4">
-                                        Select Payment Method
+                                        Pago seguro
                                     </h3>
-                                    <PaymentSelector
-                                        onMethodChange={setPaymentMethod}
-                                        onChainChange={setSelectedChain}
-                                        onTokenChange={setSelectedToken}
-                                        selectedMethod={paymentMethod}
-                                        selectedChain={selectedChain}
-                                        selectedToken={selectedToken}
-                                        priceUsd={Number(artwork.price) || 50}
-                                    />
+                                    <p className="text-sm text-white/60">Tarjeta o transferencia mediante MercadoPago.</p>
                                     <button
-                                        onClick={handleProceedToPayment}
+                                        onClick={handleMercadoPagoCheckout}
                                         className="w-full mt-6 btn-ritual flex items-center justify-center gap-3 uppercase tracking-widest text-xs py-4"
                                     >
                                         <ShoppingBag size={14} />
-                                        <span>Proceed to Payment</span>
+                                        <span>Continuar al pago</span>
                                     </button>
                                 </div>
                             )}
 
-                            {/* Crypto Payment Flow */}
-                            {showCryptoPayment && (
-                                <div className="mb-6">
-                                    <CryptoCheckoutFlow
-                                        artworkId={artwork.id}
-                                        artworkTitle={artwork.title}
-                                        amountUsd={Number(artwork.price) || 50}
-                                        chainId={selectedChain}
-                                        token={selectedToken}
-                                        onSuccess={handleCryptoSuccess}
-                                        onError={(error) => {
-                                            console.error('Payment error:', error);
-                                        }}
-                                        onBack={() => {
-                                            setShowCryptoPayment(false);
-                                            setShowPaymentOptions(true);
-                                        }}
-                                    />
-                                </div>
-                            )}
-
                             {/* Initial Buy Button */}
-                            {!showPaymentOptions && !showCryptoPayment && (
+                            {!showPaymentOptions && (
                                 <button
                                     onClick={handleBuyClick}
                                     disabled={!artwork.available}
@@ -272,17 +199,6 @@ export default function ArtworkDetailPage() {
                 </div>
             </div>
 
-            {/* Shipping Form Modal */}
-            {showShippingForm && completedOrderId && (
-                <ShippingForm
-                    orderId={completedOrderId}
-                    onSuccess={handleShippingComplete}
-                    onClose={() => {
-                        setShowShippingForm(false);
-                        router.push(`/success?type=crypto&orderId=${completedOrderId}`);
-                    }}
-                />
-            )}
         </main>
     );
 }

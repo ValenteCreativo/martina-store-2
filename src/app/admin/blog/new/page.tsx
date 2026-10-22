@@ -2,15 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { usePrivy } from '@privy-io/react-auth';
 import { blogService } from '../../../../lib/blog';
 import { Upload } from 'lucide-react';
 import RichTextEditor from '../../../../components/ui/RichTextEditor';
 
 export default function NewBlogPostPage() {
   const router = useRouter();
-  const { ready, authenticated, user } = usePrivy();
-  const [accessReady, setAccessReady] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [excerpt, setExcerpt] = useState('');
@@ -18,15 +15,6 @@ export default function NewBlogPostPage() {
   const [coverImagePreview, setCoverImagePreview] = useState('');
   const [published, setPublished] = useState(true); // true = publish now, false = save as draft
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!ready) return;
-    if (!authenticated || !user) {
-      router.push('/login');
-      return;
-    }
-    setAccessReady(true);
-  }, [router, ready, authenticated, user]);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -42,7 +30,7 @@ export default function NewBlogPostPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user || !title || !content) {
+    if (!title || !content) {
       alert('Please fill in all required fields');
       return;
     }
@@ -70,7 +58,6 @@ export default function NewBlogPostPage() {
         excerpt: excerpt || content.substring(0, 200),
         coverImageUrl: coverImageUrl,
         published,
-        authorId: user.id,
         publishedAt: published ? new Date() : null,
       };
 
@@ -87,13 +74,6 @@ export default function NewBlogPostPage() {
     }
   }
 
-  if (!accessReady) {
-    return (
-      <main className="min-h-screen pt-32 flex items-center justify-center sacred-minimal">
-        <div className="sacred-dot animate-subtle-glow" />
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen pt-32 pb-16 sacred-minimal">

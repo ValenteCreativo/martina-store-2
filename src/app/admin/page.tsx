@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { usePrivy } from '@privy-io/react-auth';
 import Link from 'next/link';
 import { artworkService } from '../../lib/services';
 import { blogService } from '../../lib/blog';
@@ -14,20 +13,14 @@ import type { Artwork, ArtworkFormData, BlogPost } from '../../types';
 
 export default function AdminPage() {
   const router = useRouter();
-  const { ready, authenticated, user, getAccessToken, logout } = usePrivy();
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'artworks' | 'tattoos' | 'blog' | 'sales' | 'reservations'>('artworks');
 
   useEffect(() => {
-    if (!ready) return;
-    if (!authenticated || !user) {
-      router.push('/login');
-      return;
-    }
     loadData();
-  }, [router, ready, authenticated, user]);
+  }, [router]);
 
   async function loadData() {
     try {
@@ -100,11 +93,10 @@ export default function AdminPage() {
   }
 
   function handleLogout() {
-    logout();
-    router.push('/login');
+    fetch('/api/auth/logout', { method: 'POST' }).finally(() => { router.push('/login'); router.refresh(); });
   }
 
-  if (loading || !ready || !authenticated || !user) {
+  if (loading) {
     return (
       <main className="min-h-screen pt-32 flex items-center justify-center sacred-minimal">
         <div className="sacred-dot animate-subtle-glow" />
@@ -121,7 +113,7 @@ export default function AdminPage() {
             <h1 className="mt-2 text-4xl text-white md:text-5xl">Estudio Martina</h1>
             <p className="mt-2 text-sm text-white/50">Obra, ventas, agenda y contenido en un mismo espacio.</p>
           </div>
-          <div className="text-left md:text-right"><p className="text-xs text-white/45">Sesión de Privy</p><button onClick={handleLogout} className="mt-2 text-[10px] uppercase tracking-[.18em] text-[#d8a0a5] hover:text-white">Cerrar sesión</button></div>
+          <div className="text-left md:text-right"><p className="text-xs text-white/45">Sesión segura</p><button onClick={handleLogout} className="mt-2 text-[10px] uppercase tracking-[.18em] text-[#d8a0a5] hover:text-white">Cerrar sesión</button></div>
         </div>
 
         <div className="mb-10 flex flex-wrap gap-2 border-b border-white/10 pb-5">
@@ -257,13 +249,13 @@ export default function AdminPage() {
 
         {tab === 'sales' && (
           <div className="max-w-6xl mx-auto">
-            <SalesDashboard getAccessToken={getAccessToken} />
+            <SalesDashboard />
           </div>
         )}
 
         {tab === 'reservations' && (
           <div className="max-w-6xl mx-auto">
-            <ReservationsDashboard getAccessToken={getAccessToken} />
+            <ReservationsDashboard />
           </div>
         )}
       </div>

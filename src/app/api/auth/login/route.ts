@@ -1,0 +1,6 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { db, users } from '../../../../db';
+import { eq } from 'drizzle-orm';
+import { createSession, setSession, verifyPassword } from '../../../../lib/admin-auth';
+import { limit } from '../../../../lib/rate-limit';
+export async function POST(request: NextRequest) { const throttled = limit(request, 'admin-login', 10, 15 * 60_000); if (throttled) return throttled; try { const { email, password } = await request.json(); if (typeof email !== 'string' || typeof password !== 'string' || password.length > 256) return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 400 }); const [user] = await db.select().from(users).where(eq(users.email, email.trim().toLowerCase())).limit(1); if (!user || !user.isAdmin || !(await verifyPassword(password, user.passwordHash))) return NextResponse.json({ error: 'Correo o contraseña incorrectos.' }, { status: 401 }); const token = await createSession({ userId: user.id, email: user.email, isAdmin: true }); const response = NextResponse.json({ ok: true }); setSession(response, token); return response; } catch { return NextResponse.json({ error: 'No se pudo iniciar sesión.' }, { status: 500 }); } }

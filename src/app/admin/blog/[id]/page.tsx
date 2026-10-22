@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { usePrivy } from '@privy-io/react-auth';
 import { blogService } from '../../../../lib/blog';
 import type { BlogPost } from '../../../../types';
 import { Upload } from 'lucide-react';
@@ -11,7 +10,6 @@ import RichTextEditor from '../../../../components/ui/RichTextEditor';
 export default function EditBlogPostPage() {
   const router = useRouter();
   const params = useParams();
-  const { ready, authenticated, user } = usePrivy();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -23,11 +21,6 @@ export default function EditBlogPostPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!ready) return;
-    if (!authenticated || !user) {
-      router.push('/login');
-      return;
-    }
 
     async function loadPost() {
       try {
@@ -50,7 +43,7 @@ export default function EditBlogPostPage() {
     }
 
     loadPost();
-  }, [params.id, router, ready, authenticated, user]);
+  }, [params.id, router]);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -66,7 +59,7 @@ export default function EditBlogPostPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user || !title || !content || !post) {
+    if (!title || !content || !post) {
       alert('Please fill in all required fields');
       return;
     }
@@ -130,7 +123,7 @@ export default function EditBlogPostPage() {
     }
   }
 
-  if (loading || !user || !post) {
+  if (loading || !post) {
     return (
       <main className="min-h-screen pt-32 flex items-center justify-center sacred-minimal">
         <div className="sacred-dot animate-subtle-glow" />

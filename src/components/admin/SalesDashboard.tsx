@@ -35,10 +35,6 @@ type ApiResponse = {
   orders: SalesOrder[];
 };
 
-interface Props {
-  getAccessToken: () => Promise<string | null>;
-}
-
 const STATUS_COLOR: Record<string, string> = {
   paid: 'text-green-500',
   pending: 'text-amber-400',
@@ -46,7 +42,7 @@ const STATUS_COLOR: Record<string, string> = {
   delivered: 'text-emerald-400',
 };
 
-export default function SalesDashboard({ getAccessToken }: Props) {
+export default function SalesDashboard() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,9 +58,7 @@ export default function SalesDashboard({ getAccessToken }: Props) {
         if (statusFilter !== 'all') params.set('status', statusFilter);
         params.set('limit', String(limit));
 
-        const token = await getAccessToken();
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await fetch(`/api/admin/sales?${params.toString()}`, { headers });
+        const res = await fetch(`/api/admin/sales?${params.toString()}`);
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
           throw new Error(body.error || 'Failed to load sales');
@@ -79,7 +73,7 @@ export default function SalesDashboard({ getAccessToken }: Props) {
     };
 
     load();
-  }, [getAccessToken, statusFilter, limit]);
+  }, [statusFilter, limit]);
 
   const recentOrders = useMemo(() => data?.orders.slice(0, 10) || [], [data]);
 
@@ -195,7 +189,7 @@ export default function SalesDashboard({ getAccessToken }: Props) {
                     {order.status}
                   </td>
                   <td className="py-3 pr-4">
-                    <StatusUpdater orderId={order.id} current={order.status} getAccessToken={getAccessToken} />
+                    <StatusUpdater orderId={order.id} current={order.status} />
                   </td>
                   <td className="py-3 pr-4 text-[#8b7d7b]">
                     <ShippingDetailButton order={order} />
@@ -222,7 +216,7 @@ function StatCard({ label, value, accent = false }: { label: string; value: stri
   );
 }
 
-function StatusUpdater({ orderId, current, getAccessToken }: { orderId: string; current: string; getAccessToken: () => Promise<string | null> }) {
+function StatusUpdater({ orderId, current }: { orderId: string; current: string }) {
   const [status, setStatus] = useState(current);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -237,7 +231,6 @@ function StatusUpdater({ orderId, current, getAccessToken }: { orderId: string; 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${await getAccessToken()}`,
         },
         body: JSON.stringify({ orderId, status: next }),
       });

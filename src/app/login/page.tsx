@@ -1,66 +1,10 @@
 'use client';
-
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { usePrivy } from '@privy-io/react-auth';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { ready, authenticated, login } = usePrivy();
-
-  const [error, setError] = useState<string | null>(null);
-  const [isChecking, setIsChecking] = useState(false);
-
-  // The server verifies the Privy access token and ADMIN_PRIVY_DIDS on each sensitive request.
-  useEffect(() => {
-    const verify = async () => {
-      if (!ready || !authenticated) return;
-      setIsChecking(true);
-      setError(null);
-      router.push('/admin');
-    };
-
-    verify();
-  }, [ready, authenticated, router]);
-
-  const handleLogin = async () => {
-    setError(null);
-    await login();
-  };
-
-  return (
-    <main className="min-h-screen flex items-center justify-center sacred-minimal">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="w-full max-w-md p-8"
-      >
-        <div className="glass-minimal p-12 rounded-lg">
-          <div className="text-center mb-8">
-            <div className="flex justify-center gap-2 mb-6">
-              <div className="sacred-dot animate-subtle-glow" />
-              <div className="sacred-dot animate-subtle-glow" style={{ animationDelay: '1s' }} />
-              <div className="sacred-dot animate-subtle-glow" style={{ animationDelay: '2s' }} />
-            </div>
-            <h1 className="text-3xl font-light tracking-wider mb-2">Acceso admin</h1>
-            <p className="text-sm text-[#c8bfba] font-light">
-              Inicia con Privy. El servidor verifica los permisos del panel.
-            </p>
-          </div>
-
-          {error && <div className="text-sm text-[#4a3434] text-center mb-4">{error}</div>}
-
-          <button
-            onClick={handleLogin}
-            disabled={!ready || isChecking}
-            className="w-full btn-elegant"
-          >
-            {!ready || isChecking ? 'Verificando...' : authenticated ? 'Entrar' : 'Sign in with Privy'}
-          </button>
-        </div>
-      </motion.div>
-    </main>
-  );
+  const router = useRouter(); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState<string | null>(null); const [busy, setBusy] = useState(false);
+  const submit = async (event: React.FormEvent) => { event.preventDefault(); setBusy(true); setError(null); try { const response = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) }); const json = await response.json(); if (!response.ok) throw new Error(json.error || 'No se pudo iniciar sesión.'); router.push('/admin'); router.refresh(); } catch (cause) { setError((cause as Error).message); } finally { setBusy(false); } };
+  return <main className="min-h-screen flex items-center justify-center sacred-minimal"><motion.form initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .6 }} onSubmit={submit} className="glass-minimal w-full max-w-md rounded-lg p-10"><div className="mb-8 text-center"><h1 className="text-3xl font-light tracking-wider">Acceso admin</h1><p className="mt-2 text-sm text-[#c8bfba] font-light">Estudio Martina</p></div><label className="mb-4 block text-[10px] uppercase tracking-[.16em] text-white/60">Correo<input required autoComplete="username" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2 w-full border border-white/15 bg-black/20 p-3 text-white" /></label><label className="block text-[10px] uppercase tracking-[.16em] text-white/60">Contraseña<input required autoComplete="current-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2 w-full border border-white/15 bg-black/20 p-3 text-white" /></label>{error && <p className="mt-4 text-sm text-red-200">{error}</p>}<button disabled={busy} className="btn-elegant mt-7 w-full" type="submit">{busy ? 'Entrando…' : 'Entrar al panel'}</button></motion.form></main>;
 }

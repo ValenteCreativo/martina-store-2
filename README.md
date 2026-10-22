@@ -7,7 +7,7 @@ Portfolio y tienda para Martina Gorozo — tatuadora y artista digital.
 - **Next.js 16** + React 19 (App Router)
 - **Drizzle ORM** + NeonDB (PostgreSQL serverless)
 - **MercadoPago** — método principal de pago
-- **Privy** — autenticación web3 (wallet + email)
+- **PostgreSQL + bcrypt + JWT** — acceso administrativo con contraseña y sesión HttpOnly
 - **viem** — interacción on-chain para pagos cripto (USDC/USDT)
 - **Vercel Blob** — almacenamiento de imágenes
 - **Framer Motion** — animaciones
@@ -21,10 +21,9 @@ Crea un archivo `.env.local` con las siguientes variables:
 # Base de datos (NeonDB)
 DATABASE_URL=postgresql://...
 
-# Privy (autenticación)
-NEXT_PUBLIC_PRIVY_APP_ID=clxxxxx
-PRIVY_APP_SECRET=               # secreto de servidor: nunca NEXT_PUBLIC_
-ADMIN_PRIVY_DIDS=did:privy:...  # lista separada por comas de identidades autorizadas
+# Admin (sesión propia)
+ADMIN_SESSION_SECRET=            # 32+ caracteres aleatorios, secreto de servidor
+ADMIN_SETUP_TOKEN=               # secreto temporal para crear/restablecer la cuenta admin
 
 # MercadoPago
 MERCADO_PAGO_ACCESS_TOKEN=APP_USR-...
@@ -64,8 +63,8 @@ npm test
 | `/blog` | Journal / entradas del blog |
 | `/reservations` | Formulario de reserva de sesión de tatuaje |
 | `/about` | Sobre Martina |
-| `/admin` | Panel de administración (requiere Privy + DID autorizado en servidor) |
-| `/login` | Login admin via Privy |
+| `/admin` | Panel de administración (requiere sesión segura) |
+| `/login` | Login admin con correo y contraseña |
 
 ## Pagos
 
@@ -84,7 +83,9 @@ El checkout cripto está deliberadamente desactivado hasta tener una integració
 
 ## Admin
 
-Acceso vía `/login` con Privy. Las rutas administrativas validan el token en el servidor y comparan el DID contra `ADMIN_PRIVY_DIDS`; un correo o localStorage no otorgan permisos.
+Acceso vía `/login` con correo y contraseña. La contraseña se guarda con hash bcrypt; el navegador recibe únicamente una cookie HttpOnly firmada. Las rutas administrativas no confían en localStorage.
+
+Para crear o restablecer la primera cuenta, usa `POST /api/auth/setup` con el header `x-admin-setup-token` igual a `ADMIN_SETUP_TOKEN`; después elimina o rota esa variable.
 
 Secciones del panel:
 - **Artworks** — CRUD de arte digital

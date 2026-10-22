@@ -143,10 +143,10 @@ export async function getBlogPostById(id: string) {
     }
 }
 
-export async function createBlogPost(post: NewBlogPost) {
+export async function createBlogPost(post: Omit<NewBlogPost, 'authorId'>) {
     try {
-        await assertServerAdmin();
-        const [data] = await db.insert(blogPosts).values(post).returning();
+        const admin = await assertServerAdmin();
+        const [data] = await db.insert(blogPosts).values({ ...post, authorId: admin.userId }).returning();
         return { data, error: null };
     } catch (error) {
         console.error('Create Blog Post Error:', error);

@@ -54,7 +54,7 @@ export const blogPosts = pgTable('blog_posts', {
     publishedAt: timestamp('published_at'),
 });
 
-// Wallet users - Links Privy authentication with wallet address and email
+// Legacy wallet purchasers retained only for historical order records.
 export const walletUsers = pgTable('wallet_users', {
     id: uuid('id').primaryKey().defaultRandom(),
     privyId: varchar('privy_id', { length: 255 }).unique().notNull(),
