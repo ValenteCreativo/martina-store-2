@@ -25,7 +25,9 @@ export default function Home() {
   const veilOpacity = useTransform(scrollYProgress, [.08, .46], [0, .94]);
   const heroOpacity = useTransform(scrollYProgress, [.48, .68], [0, 1]);
   const heroY = useTransform(scrollYProgress, [.48, .68], [26, 0]);
-  const introNameOpacity = useTransform(scrollYProgress, [0, .38, .52], [1, 1, 0]);
+  // The opening title stays continuous: it descends into the hero instead of disappearing.
+  const introNameY = useTransform(scrollYProgress, [0, .38, .62], ['0vh', '0vh', '25vh']);
+  const introNameScale = useTransform(scrollYProgress, [0, .38, .62], [1, 1, 1.42]);
 
   useEffect(() => {
     artworkService.getAll().then(({ data }) => {
@@ -41,7 +43,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[#050505]" />
         <motion.div className="absolute inset-0 will-change-transform" style={{ scale: reducedMotion ? 1 : imageScale, opacity: imageOpacity }}><Image src="/intro.png" alt="Martina Gorozo junto a su obra" fill priority quality={90} sizes="100vw" className="object-cover object-center" /></motion.div>
         <motion.div className="absolute inset-0 pointer-events-none" style={{ opacity: veilOpacity, background: 'radial-gradient(ellipse 54% 52% at center, transparent 0%, rgba(5,5,5,.62) 57%, #050505 100%)' }} />
-        <motion.div className="pointer-events-none absolute inset-x-0 top-7 z-10 px-6 text-center md:top-10" style={{ opacity: introNameOpacity }}><span className="text-xl uppercase tracking-[.32em] text-white md:text-3xl" style={{ fontFamily: 'var(--font-heading), serif', textShadow: '0 2px 14px rgba(0,0,0,.95)' }}>Martina Gorozo</span></motion.div>
+        <motion.div className="pointer-events-none absolute inset-x-0 top-7 z-30 px-6 text-center md:top-10" style={{ y: introNameY, scale: introNameScale }}><span className="text-xl uppercase tracking-[.32em] text-white md:text-3xl" style={{ fontFamily: 'var(--font-heading), serif', textShadow: '0 2px 14px rgba(0,0,0,.95)' }}>Martina Gorozo</span></motion.div>
         <motion.div className="pointer-events-none absolute inset-x-0 bottom-9 z-10 flex flex-col items-center gap-2 text-[9px] uppercase tracking-[.46em] text-[#e5e5e5]/85"><motion.span className="bg-black/25 px-3 py-1 backdrop-blur-[2px]" animate={reducedMotion ? {} : { y: [0, 6, 0] }} transition={{ duration: 1.9, repeat: Infinity, ease: 'easeInOut' }}>Desliza</motion.span><span className="h-10 w-px bg-white/55" /></motion.div>
         <motion.div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center" style={{ opacity: heroOpacity, y: heroY }}><span className="mb-7 text-[10px] uppercase tracking-[.38em] text-[#a51f2d]">Artista · Tatuadora · CDMX</span><p className="max-w-xl text-base leading-relaxed text-[#e5e5e5] md:text-xl">Artista multidisciplinaria y tatuadora en Ciudad de México. El ojo como portal. La geometría como lenguaje.</p><div className="my-8 h-px w-20 bg-white/70" /><div className="mt-2 flex flex-wrap justify-center gap-3"><Link className="btn-ritual" href="/reservations">Reservar sesión</Link><Link className="btn-ritual" href="/services">Conocer servicios</Link></div><Link href="/tattoos" className="mt-6 text-[10px] uppercase tracking-[.25em] text-white/60 transition hover:text-[#a51f2d]">Ver tatuajes <span aria-hidden="true">→</span></Link></motion.div>
       </div>

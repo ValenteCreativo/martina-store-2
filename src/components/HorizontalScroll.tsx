@@ -27,6 +27,7 @@ export default function HorizontalScroll({ children, className = '' }: Horizonta
 
   return <section ref={targetRef} className={`relative h-[400vh] md:cursor-none ${className}`} aria-label="Recorrido por la obra">
     <div className="carousel-leather-surface sticky top-0 h-screen overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 bg-black/70" />
       <RitualCursor />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-px bg-white/10" />
       <motion.div className="absolute top-0 left-0 z-50 h-px bg-[#a51f2d]" style={{ width: progressWidth }} />
