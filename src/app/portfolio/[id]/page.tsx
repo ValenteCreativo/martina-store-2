@@ -58,11 +58,11 @@ export default function ArtworkDetailPage() {
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                alert('Checkout initialization failed.');
+                alert('No se pudo iniciar el pago.');
             }
         } catch (error) {
             console.error('Error initiating checkout:', error);
-            alert('Error initiating checkout. Please try again.');
+            alert('No se pudo iniciar el pago. Intenta de nuevo.');
         }
     }
 
@@ -90,7 +90,7 @@ export default function ArtworkDetailPage() {
                 {/* Back Navigation */}
                 <Link href="/portfolio" className="inline-flex items-center gap-2 text-[#c8bfba] hover:text-[#8a1c1c] transition-colors mb-12 group">
                     <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                    <span className="text-[10px] uppercase tracking-[0.2em]">Return to Archive</span>
+                    <span className="text-[10px] uppercase tracking-[0.2em]">Volver al portafolio</span>
                 </Link>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 items-start">
@@ -159,7 +159,7 @@ export default function ArtworkDetailPage() {
                                 </div>
                                 <div className="text-right">
                                     <span className={`text-[9px] uppercase tracking-widest ${artwork.available ? 'text-green-900/60' : 'text-red-900/60'}`}>
-                                        {artwork.available ? 'Available' : 'Sold Out'}
+                                        {artwork.available ? 'Disponible' : 'Vendida'}
                                     </span>
                                 </div>
                             </div>
@@ -189,7 +189,7 @@ export default function ArtworkDetailPage() {
                                     className="w-full btn-ritual flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest text-xs py-4"
                                 >
                                     <ShoppingBag size={14} />
-                                    <span>{artwork.available ? 'Acquire Artwork' : 'Unavailable'}</span>
+                                    <span>{artwork.available ? 'Adquirir obra' : 'No disponible'}</span>
                                 </button>
                             )}
                         </div>

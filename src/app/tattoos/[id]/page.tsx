@@ -55,11 +55,11 @@ export default function TattooDetailPage() {
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                alert('Checkout initialization failed.');
+                alert('No se pudo iniciar el pago.');
             }
         } catch (error) {
             console.error('Error initiating checkout:', error);
-            alert('Error initiating checkout. Please try again.');
+            alert('No se pudo iniciar el pago. Intenta de nuevo.');
         }
     }
 
@@ -80,7 +80,7 @@ export default function TattooDetailPage() {
                 {/* Back Navigation */}
                 <Link href="/tattoos" className="inline-flex items-center gap-2 text-[#c8bfba] hover:text-[#8a1c1c] transition-colors mb-12 group">
                     <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                    <span className="text-[10px] uppercase tracking-[0.2em]">Return to Ink Rituals</span>
+                    <span className="text-[10px] uppercase tracking-[0.2em]">Volver a tatuajes</span>
                 </Link>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 items-start">
@@ -147,7 +147,7 @@ export default function TattooDetailPage() {
                                 </div>
                                 <div className="text-right">
                                     <span className={`text-[9px] uppercase tracking-widest ${artwork.available ? 'text-green-900/60' : 'text-red-900/60'}`}>
-                                        {artwork.available ? 'Available' : 'Booked'}
+                                        {artwork.available ? 'Disponible' : 'Reservado'}
                                     </span>
                                 </div>
                             </div>
@@ -158,7 +158,7 @@ export default function TattooDetailPage() {
                                 className="w-full btn-ritual flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest text-xs py-4"
                             >
                                 <ShoppingBag size={14} />
-                                <span>{artwork.available ? 'Acquire' : 'Unavailable'}</span>
+                                <span>{artwork.available ? 'Adquirir' : 'No disponible'}</span>
                             </button>
                         </div>
 

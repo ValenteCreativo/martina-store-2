@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Cinzel, Cormorant_Garamond } from "next/font/google";
+import { Bodoni_Moda, DM_Sans } from "next/font/google";
 import "./globals.css";
 import Navigation from "../components/ui/Navigation";
 import Providers from "./providers";
 
-const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin"] });
-const cormorant = Cormorant_Garamond({ variable: "--font-cormorant", subsets: ["latin"], weight: ["300", "400", "500", "600", "700"] });
+const bodoni = Bodoni_Moda({ variable: "--font-bodoni", subsets: ["latin"], weight: ["400", "500", "600"] });
+const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
   title: "Martina Gorozo · Arte y tatuaje en CDMX",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es-MX">
-      <body className={`${cinzel.variable} ${cormorant.variable} antialiased sacred-bg`}>
+      <body className={`${bodoni.variable} ${dmSans.variable} antialiased sacred-bg`}>
         <Providers>
           <Navigation />
           {children}

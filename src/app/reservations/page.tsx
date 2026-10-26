@@ -63,7 +63,7 @@ export default function ReservationsPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.email || !form.description) {
-      setError('Name, email, and description are required.');
+      setError('Nombre, correo y descripción son obligatorios.');
       return;
     }
 
@@ -89,11 +89,11 @@ export default function ReservationsPage() {
       });
 
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Failed to submit');
+      if (!res.ok) throw new Error(json.error || 'No se pudo enviar la solicitud.');
 
       router.push('/reservations/confirmation');
     } catch (err) {
-      setError((err as Error).message || 'Something went wrong. Please try again.');
+      setError((err as Error).message || 'Algo salió mal. Intenta de nuevo.');
     } finally {
       setSubmitting(false);
     }
@@ -107,37 +107,37 @@ export default function ReservationsPage() {
 
           {/* Header */}
           <div className="text-center mb-16">
-            <div className="w-px h-16 bg-gradient-to-b from-transparent via-[#8a1c1c] to-transparent mx-auto mb-8 opacity-50" />
+            <div className="w-px h-16 bg-white/30 mx-auto mb-8 opacity-50" />
             <h1 className="text-4xl md:text-5xl font-light tracking-[0.2em] uppercase text-white mb-4">
-              Reservations
+              Reservas
             </h1>
-            <p className="text-[#c8bfba] text-sm tracking-widest uppercase">Tattoo · Consultation</p>
-            <div className="w-px h-12 bg-gradient-to-b from-[#8a1c1c] to-transparent mx-auto mt-8 opacity-50" />
+            <p className="text-[#c8bfba] text-sm tracking-widest uppercase">Tatuaje · Consulta</p>
+            <div className="w-px h-12 bg-white/30 mx-auto mt-8 opacity-50" />
           </div>
 
           {/* Intro text */}
           <p className="text-[#c8bfba] font-light leading-relaxed text-center mb-12 text-sm">
-            Fill out the form below and Martina will get back to you within 2–3 business days to confirm availability and discuss your vision.
+            Completa el formulario y Martina te responderá en 2 a 3 días hábiles para confirmar disponibilidad y conversar sobre tu propuesta.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-8">
 
             {/* Step indicator */}
             <div className="flex items-center justify-center gap-4 mb-8">
-              <StepDot active={step === 1} label="Contact" />
+              <StepDot active={step === 1} label="Contacto" />
               <div className="w-16 h-px bg-[#1a1a1a]" />
-              <StepDot active={step === 2} label="Session" />
+              <StepDot active={step === 2} label="Sesión" />
             </div>
 
             {/* Step 1: Contact Info */}
             {step === 1 && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-                <Field label="Full Name *" id="name">
+                <Field label="Nombre completo *" id="name">
                   <input
                     id="name" type="text" required value={form.name}
                     onChange={(e) => set('name', e.target.value)}
                     className="ritual-input"
-                    placeholder="Your name"
+                    placeholder="Tu nombre"
                   />
                 </Field>
 
@@ -153,7 +153,7 @@ export default function ReservationsPage() {
                   </div>
                 </Field>
 
-                <Field label="Phone" id="phone">
+                <Field label="Teléfono" id="phone">
                   <input
                     id="phone" type="tel" value={form.phone}
                     onChange={(e) => set('phone', e.target.value)}
@@ -169,7 +169,7 @@ export default function ReservationsPage() {
                       id="instagram" type="text" value={form.instagram}
                       onChange={(e) => set('instagram', e.target.value)}
                       className="ritual-input pl-10"
-                      placeholder="@yourhandle"
+                      placeholder="@tuusuario"
                     />
                   </div>
                 </Field>
@@ -181,7 +181,7 @@ export default function ReservationsPage() {
                     disabled={!form.name || !form.email}
                     className="w-full btn-ritual py-4 uppercase tracking-widest text-xs disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Continue →
+                    Continuar →
                   </button>
                 </div>
               </motion.div>
@@ -193,7 +193,7 @@ export default function ReservationsPage() {
 
                 {/* Session Type */}
                 <div>
-                  <label className="block text-[9px] uppercase tracking-widest text-[#9a9a9a] mb-3">Session Type *</label>
+                  <label className="block text-[9px] uppercase tracking-widest text-[#9a9a9a] mb-3">Tipo de sesión *</label>
                   <div className="flex gap-3">
                     {(['tattoo', 'consultation'] as SessionType[]).map((type) => (
                       <button
@@ -206,37 +206,37 @@ export default function ReservationsPage() {
                             : 'border-[#1a1a1a] text-[#606060] hover:border-[#2a2a2a]'
                         }`}
                       >
-                        {type}
+                        {type === 'tattoo' ? 'Tatuaje' : 'Consulta'}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <Field label="Describe your idea *" id="description">
+                <Field label="Describe tu idea *" id="description">
                   <textarea
                     id="description" required value={form.description}
                     onChange={(e) => set('description', e.target.value)}
                     rows={4}
                     className="ritual-input resize-none"
-                    placeholder="Tell Martina about your vision, references, symbols, feelings..."
+                    placeholder="Cuéntale a Martina sobre tu idea, referencias, símbolos y sensaciones…"
                   />
                 </Field>
 
                 {form.sessionType === 'tattoo' && (
                   <>
-                    <Field label="Body Placement" id="placement">
+                    <Field label="Zona del cuerpo" id="placement">
                       <input
                         id="placement" type="text" value={form.placement}
                         onChange={(e) => set('placement', e.target.value)}
                         className="ritual-input"
-                        placeholder="e.g. forearm, ribcage, spine..."
+                        placeholder="Ej. antebrazo, costillas, espalda…"
                       />
                     </Field>
 
                     <div>
                       <label className="block text-[9px] uppercase tracking-widest text-[#9a9a9a] mb-3">
                         <Ruler size={12} className="inline mr-1" />
-                        Approximate Size
+                        Tamaño aproximado
                       </label>
                       <div className="grid grid-cols-4 gap-2">
                         {(['small', 'medium', 'large', 'extra-large'] as SizeApprox[]).map((size) => (
@@ -250,7 +250,7 @@ export default function ReservationsPage() {
                                 : 'border-[#1a1a1a] text-[#606060] hover:border-[#2a2a2a]'
                             }`}
                           >
-                            {size}
+                            {{ small: 'Chico', medium: 'Mediano', large: 'Grande', 'extra-large': 'Extra grande' }[size]}
                           </button>
                         ))}
                       </div>
@@ -260,25 +260,25 @@ export default function ReservationsPage() {
 
                 {/* Reference Image */}
                 <div>
-                  <label className="block text-[9px] uppercase tracking-widest text-[#9a9a9a] mb-3">Reference Image (optional)</label>
+                  <label className="block text-[9px] uppercase tracking-widest text-[#9a9a9a] mb-3">Imagen de referencia (opcional)</label>
                   <div className="border border-[#1a1a1a] p-4">
                     {referencePreview ? (
                       <div className="text-center space-y-3">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={referencePreview} alt="Reference" className="max-h-48 mx-auto rounded" />
+                        <img src={referencePreview} alt="Referencia" className="max-h-48 mx-auto rounded" />
                         <button
                           type="button"
                           onClick={() => { setReferenceImage(null); setReferencePreview(''); }}
                           className="text-xs text-[#c8bfba] hover:text-white transition-colors"
                         >
-                          Remove
+                          Quitar
                         </button>
                       </div>
                     ) : (
                       <label className="cursor-pointer flex flex-col items-center gap-3 py-6 text-[#9a9a9a] hover:text-[#c8bfba] transition-colors">
                         <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                         <Upload size={24} />
-                        <span className="text-xs tracking-widest uppercase">Upload reference</span>
+                        <span className="text-xs tracking-widest uppercase">Subir referencia</span>
                       </label>
                     )}
                   </div>
@@ -286,7 +286,7 @@ export default function ReservationsPage() {
 
                 {/* Preferred date */}
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Preferred Date" id="preferredDate">
+                  <Field label="Fecha preferida" id="preferredDate">
                     <div className="relative">
                       <Calendar size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9a9a9a]" />
                       <input
@@ -296,7 +296,7 @@ export default function ReservationsPage() {
                       />
                     </div>
                   </Field>
-                  <Field label="Preferred Time" id="preferredTime">
+                  <Field label="Horario preferido" id="preferredTime">
                     <input
                       id="preferredTime" type="time" value={form.preferredTime}
                       onChange={(e) => set('preferredTime', e.target.value)}
@@ -305,13 +305,13 @@ export default function ReservationsPage() {
                   </Field>
                 </div>
 
-                <Field label="Additional Notes" id="additionalNotes">
+                <Field label="Notas adicionales" id="additionalNotes">
                   <textarea
                     id="additionalNotes" value={form.additionalNotes}
                     onChange={(e) => set('additionalNotes', e.target.value)}
                     rows={2}
                     className="ritual-input resize-none"
-                    placeholder="Anything else you'd like to share..."
+                    placeholder="¿Hay algo más que quieras compartir?"
                   />
                 </Field>
 
@@ -325,14 +325,14 @@ export default function ReservationsPage() {
                     onClick={() => setStep(1)}
                     className="px-6 py-4 border border-[#1a1a1a] text-[#c8bfba] hover:border-[#2a2a2a] transition-colors text-xs uppercase tracking-widest"
                   >
-                    ← Back
+                    ← Volver
                   </button>
                   <button
                     type="submit"
                     disabled={submitting || !form.description}
                     className="flex-1 btn-ritual py-4 uppercase tracking-widest text-xs disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    {submitting ? 'Sending...' : 'Send Request'}
+                    {submitting ? 'Enviando…' : 'Enviar solicitud'}
                   </button>
                 </div>
               </motion.div>

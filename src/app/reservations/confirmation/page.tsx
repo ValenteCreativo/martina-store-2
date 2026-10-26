@@ -19,26 +19,26 @@ export default function ReservationConfirmationPage() {
                     </div>
                 </div>
 
-                <div className="w-px h-12 bg-gradient-to-b from-transparent via-[#8a1c1c] to-transparent mx-auto mb-8 opacity-50" />
+                <div className="w-px h-12 bg-white/35 mx-auto mb-8 opacity-50" />
 
                 <h1 className="text-3xl font-light uppercase tracking-widest mb-4 text-[#e5e5e5]">
-                    Request Received
+                    Solicitud recibida
                 </h1>
 
                 <p className="text-[#c8bfba] mb-4 font-light leading-relaxed">
-                    Thank you for reaching out. Martina will review your request and get back to you within 2–3 business days.
+                    Gracias por escribir. Martina revisará tu solicitud y te responderá en 2 a 3 días hábiles.
                 </p>
 
                 <p className="text-[#9a9a9a] text-sm font-light">
-                    Check your email for confirmation.
+                    Revisa tu correo para confirmar que recibimos tu solicitud.
                 </p>
 
                 <div className="mt-12 flex flex-col gap-3">
                     <Link href="/portfolio" className="btn-ritual">
-                        Explore Portfolio
+                        Ver portafolio
                     </Link>
                     <Link href="/" className="text-xs text-[#606060] hover:text-[#e5e5e5] transition-colors">
-                        Return Home
+                        Volver al inicio
                     </Link>
                 </div>
             </motion.div>

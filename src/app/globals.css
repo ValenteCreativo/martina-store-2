@@ -3,7 +3,7 @@
 :root {
   --background: #050505;   /* Deep Void Black */
   --foreground: #e5e5e5;   /* Bone White */
-  --accent: #8a1c1c;       /* Blood Red */
+  --accent: #9f1d25;       /* Red is reserved for interactive details */
   --muted: #a0a0a0;        /* Muted Gray — legible on dark */
   --subtle: #c0b8b5;       /* Warm Stone — legible on dark */
   --border: #1a1a1a;       /* Very subtle border */
@@ -39,8 +39,7 @@ html { scroll-behavior: smooth; }
 ::selection { background: #a51f2d; color: #fff; }
 
 .editorial-grid {
-  background-image: linear-gradient(rgba(244,238,232,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(244,238,232,.035) 1px, transparent 1px);
-  background-size: 48px 48px;
+  background-image: none;
 }
 
 .reveal-up { animation: reveal-up .8s cubic-bezier(.2,.65,.25,1) both; }
@@ -57,8 +56,8 @@ html { scroll-behavior: smooth; }
   --color-muted: var(--muted);
   --color-border: var(--border);
 
-  --font-heading: var(--font-cinzel);
-  --font-body: var(--font-cormorant);
+  --font-heading: var(--font-bodoni);
+  --font-body: var(--font-dm-sans);
 
   @keyframes fade-in-up {
     0% {
@@ -89,9 +88,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), serif;
-  font-weight: 300;
-  letter-spacing: 0.02em;
-  line-height: 1.8;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.65;
   overflow-x: hidden;
   position: relative;
 }
@@ -128,11 +127,11 @@ body::after {
   mix-blend-mode: soft-light;
 }
 
-/* Quantum Leap: The Red Thread (Global Structural Element) */
+/* Structural details use red only as a line, never as a background gradient. */
 .red-thread {
   position: absolute;
   width: 1px;
-  background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+  background: var(--accent);
   opacity: 0.4;
   pointer-events: none;
   z-index: 10;
@@ -141,7 +140,7 @@ body::after {
 .dashed-thread {
   position: absolute;
   width: 1px;
-  background: repeating-linear-gradient(to bottom, var(--accent) 0, var(--accent) 4px, transparent 4px, transparent 12px);
+  background: var(--accent);
   opacity: 0.3;
   pointer-events: none;
   z-index: 9;
@@ -154,8 +153,8 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading), serif;
-  font-weight: 400;
-  letter-spacing: 0.05em;
+  font-weight: 500;
+  letter-spacing: 0.015em;
   text-transform: uppercase;
   /* Debossing — pressed into leather effect */
   text-shadow:
@@ -334,7 +333,7 @@ h1 {
 .divider {
   width: 100%;
   height: 1px;
-  background: linear-gradient(to right, transparent, #1a1a1a, transparent);
+  background: #1a1a1a;
 }
 
 /* elegant-text: uppercase tracking heading style */
@@ -470,7 +469,7 @@ h1 {
 /* Accent divider line */
 .accent-line {
   width: 1px;
-  background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+  background: var(--accent);
   opacity: 0.5;
   margin: 0 auto;
 }

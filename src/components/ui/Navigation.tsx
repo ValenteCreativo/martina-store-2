@@ -73,10 +73,10 @@ export default function Navigation() {
             <button
               onClick={() => setIsOpen(true)}
               className="group flex items-center gap-3 text-white hover:text-[#8a1c1c] transition-colors"
-              aria-label="Open menu"
+              aria-label="Abrir menú"
             >
               <span className="hidden md:block text-[10px] uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                Menu
+                Menú
               </span>
               <Menu size={22} strokeWidth={1} className="transition-transform duration-500 group-hover:rotate-90" />
             </button>
@@ -113,10 +113,10 @@ export default function Navigation() {
             <button
               onClick={() => setIsOpen(false)}
               className="absolute top-8 right-8 md:top-10 md:right-12 text-white/40 hover:text-[#8a1c1c] transition-colors group z-10"
-              aria-label="Close menu"
+              aria-label="Cerrar menú"
             >
               <X size={28} strokeWidth={0.8} className="transition-transform duration-500 group-hover:rotate-90" />
-              <span className="block text-[9px] tracking-widest uppercase mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Close</span>
+              <span className="block text-[9px] tracking-widest uppercase mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Cerrar</span>
             </button>
 
             {/* Nav links */}

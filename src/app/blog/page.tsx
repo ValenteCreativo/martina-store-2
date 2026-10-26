@@ -33,7 +33,7 @@ export default function BlogPage() {
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
           <div className="mb-24 text-center">
-            <h1 className="text-4xl md:text-5xl font-light mb-2 tracking-[0.2em] uppercase text-white">Journal</h1>
+            <h1 className="text-4xl md:text-5xl font-light mb-2 tracking-[0.2em] uppercase text-white">Bitácora</h1>
             <div className="w-px h-12 bg-gradient-to-b from-[#8a1c1c] to-transparent mx-auto mt-8 opacity-50" />
           </div>
 
@@ -82,7 +82,7 @@ export default function BlogPage() {
                       <h2 className="text-2xl font-light mb-3 tracking-wide text-[#e5e5e5] group-hover:text-white transition-colors">{post.title}</h2>
 
                       <p className="text-sm text-[#c8bfba] leading-relaxed line-clamp-2 md:line-clamp-2 font-light">
-                        {post.excerpt || 'Read the full entry...'}
+                        {post.excerpt || 'Leer la entrada completa…'}
                       </p>
                     </div>
 

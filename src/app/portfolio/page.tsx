@@ -44,7 +44,7 @@ export default function PortfolioPage() {
           className="mb-16 text-center"
         >
           <p className="eyebrow mb-4">Galería · 2024 — 2026</p>
-          <h1 className="page-title">Portfolio</h1>
+          <h1 className="page-title">Portafolio</h1>
           <p className="mt-6 max-w-2xl mx-auto text-sm leading-relaxed text-[#c8bfba]">Desde niña dibujo ojos sin saber por qué. Con el tiempo entendí que no eran una obsesión, sino un portal: la fractalización del todo experimentándose a sí mismo.</p>
           <div className="h-12 accent-line mt-6" />
         </motion.div>
@@ -58,14 +58,14 @@ export default function PortfolioPage() {
               onClick={() => setFilter('digital')}
               count={digital.length}
             >
-              Digital Art
+              Arte digital
             </TabButton>
             <TabButton
               active={filter === 'tattoo'}
               onClick={() => setFilter('tattoo')}
               count={tattoos.length}
             >
-              Ink · Tattoos
+              Tatuajes
             </TabButton>
           </div>
         </div>
@@ -143,7 +143,7 @@ function TabButton({
           ? 'bg-[#8a1c1c]/10 text-[#e5e5e5]'
           : 'bg-transparent text-[#9a9a9a] hover:text-[#c8bfba]'
       }`}
-      style={{ fontFamily: 'var(--font-cinzel), serif' }}
+      style={{ fontFamily: 'var(--font-heading), serif' }}
     >
       {/* active indicator */}
       {active && (
