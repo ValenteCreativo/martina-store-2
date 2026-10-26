@@ -37,7 +37,7 @@ function SuccessContent() {
                     </div>
                 </div>
 
-                <div className="w-px h-12 bg-gradient-to-b from-transparent via-[#8a1c1c] to-transparent mx-auto mb-8 opacity-50" />
+                <div className="w-px h-12 bg-white/30 mx-auto mb-8 opacity-50" />
 
                 <h1 className="text-3xl font-light uppercase tracking-widest mb-4">
                     {isCrypto ? 'Payment Confirmed' : 'Payment Successful'}

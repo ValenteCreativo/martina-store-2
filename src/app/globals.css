@@ -42,6 +42,14 @@ html { scroll-behavior: smooth; }
   background-image: none;
 }
 
+/* The horizontal portfolio lives on a materially darker, pebbled leather plane. */
+.carousel-leather-surface {
+  background-color: #030303;
+  background-image: url('/leather-grain-tile.png');
+  background-repeat: repeat;
+  background-size: 560px 560px;
+}
+
 .reveal-up { animation: reveal-up .8s cubic-bezier(.2,.65,.25,1) both; }
 @keyframes reveal-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 

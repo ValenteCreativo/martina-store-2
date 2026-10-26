@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react';
 import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
-import LeatherGrain from './LeatherGrain';
 import RitualCursor from './RitualCursor';
 
 interface HorizontalScrollProps { children: React.ReactNode; className?: string; }
@@ -27,8 +26,7 @@ export default function HorizontalScroll({ children, className = '' }: Horizonta
   });
 
   return <section ref={targetRef} className={`relative h-[400vh] md:cursor-none ${className}`} aria-label="Recorrido por la obra">
-    <div className="sticky top-0 h-screen overflow-hidden">
-      <LeatherGrain />
+    <div className="carousel-leather-surface sticky top-0 h-screen overflow-hidden">
       <RitualCursor />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-px bg-white/10" />
       <motion.div className="absolute top-0 left-0 z-50 h-px bg-[#a51f2d]" style={{ width: progressWidth }} />

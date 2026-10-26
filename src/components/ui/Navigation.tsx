@@ -159,7 +159,7 @@ export default function Navigation() {
               animate={{ scaleY: 1 }}
               transition={{ duration: 1.2, ease: 'easeInOut' }}
               style={{ transformOrigin: 'top' }}
-              className="absolute left-10 top-0 h-full w-px bg-gradient-to-b from-transparent via-[#8a1c1c]/25 to-transparent hidden md:block"
+              className="absolute left-10 top-0 h-full w-px bg-white/15 hidden md:block"
             />
           </motion.div>
         )}

@@ -34,7 +34,7 @@ export default function BlogPage() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
           <div className="mb-24 text-center">
             <h1 className="text-4xl md:text-5xl font-light mb-2 tracking-[0.2em] uppercase text-white">Bitácora</h1>
-            <div className="w-px h-12 bg-gradient-to-b from-[#8a1c1c] to-transparent mx-auto mt-8 opacity-50" />
+            <div className="w-px h-12 bg-white/30 mx-auto mt-8 opacity-50" />
           </div>
 
           {loading ? (
